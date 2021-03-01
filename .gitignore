@@ -131,3 +131,5 @@ dmypy.json
 # Jetbrains
 *.iml
 .idea
+.idea/misc.xml
+.idea/P8.iml
