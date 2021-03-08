@@ -10,10 +10,11 @@ import pathlib
 import matplotlib.pyplot as plt
 
 
-def load_data(data_path):
+def load_data(data_path, validation_percent):
     """
     Loads and labels images from a directory. Splits images into training and validation sets.
 
+    :param validation_percent: Percentage saved for validation of model
     :param data_path: The path to dataset directory
     :return: A tuple consisting of 2 tf.data.Datset objects.The training and validation datasets respectively.
     """
@@ -27,7 +28,7 @@ def load_data(data_path):
     # Classes defined by directory structure
     train_ds = tf.keras.preprocessing.image_dataset_from_directory(
         data_dir,
-        validation_split=0.2,
+        validation_split=validation_percent,
         subset="training",
         seed=123,
         shuffle=True,
@@ -37,7 +38,7 @@ def load_data(data_path):
 
     validation_ds = tf.keras.preprocessing.image_dataset_from_directory(
         data_dir,
-        validation_split=0.2,
+        validation_split=validation_percent,
         subset="validation",
         seed=123,
         shuffle=True,
