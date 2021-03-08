@@ -1,8 +1,9 @@
 import tensorflow as tf
 from os import path
+import time
 
 from tensorflow.keras import datasets, layers, models
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 # make a prediction for a new image.
 from keras.preprocessing.image import load_img
@@ -20,6 +21,7 @@ def train_cnn_model():
     class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer',
                    'dog', 'frog', 'horse', 'ship', 'truck']
 
+    """
     plt.figure(figsize=(10, 10))
     for i in range(25):
         plt.subplot(5, 5, i + 1)
@@ -31,6 +33,7 @@ def train_cnn_model():
         # which is why you need the extra index
         plt.xlabel(class_names[train_labels[i][0]])
     plt.show()
+    """
 
     model = models.Sequential()
     model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)))
@@ -51,6 +54,7 @@ def train_cnn_model():
     history = model.fit(train_images, train_labels, epochs=10,
                         validation_data=(test_images, test_labels))
 
+    """
     plt.plot(history.history['accuracy'], label='accuracy')
     plt.plot(history.history['val_accuracy'], label='val_accuracy')
     plt.xlabel('Epoch')
@@ -58,6 +62,7 @@ def train_cnn_model():
     plt.ylim([0.5, 1])
     plt.legend(loc='lower right')
     plt.show()
+    """
 
     test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
 
@@ -95,6 +100,8 @@ def run_example():
     print(result[0])
 
 # entry point, run with image example or train model
-
-# train_cnn_model()
+time_before = time.time()
+train_cnn_model()
+print("Time spent on training: " + str(time.time() - time_before))
 # run_example()
+
