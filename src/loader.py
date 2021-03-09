@@ -10,7 +10,7 @@ import pathlib
 import matplotlib.pyplot as plt
 
 
-def load_data(data_path, validation_percent):
+def load_data(data_path, validation_percent=0.2):
     """
     Loads and labels images from a directory. Splits images into training and validation sets.
 
@@ -22,8 +22,8 @@ def load_data(data_path, validation_percent):
     data_dir = pathlib.Path(data_path)
 
     batch_size = 32
-    img_height = 180
-    img_width = 180
+    img_height = 32
+    img_width = 32
 
     # Classes defined by directory structure
     train_ds = tf.keras.preprocessing.image_dataset_from_directory(
