@@ -1,13 +1,7 @@
-import numpy as np
-import os
-# PILLOW lib
-import PIL
-import PIL.Image
-import tensorflow as tf
-# tensorflow-datasets lib
-import tensorflow_datasets as tfds
 import pathlib
+
 import matplotlib.pyplot as plt
+import tensorflow as tf
 
 
 def load_data(data_path, validation_percent=0.2):
@@ -62,7 +56,7 @@ def visualize_data(dataset, img_count):
     plt.figure(figsize=(10, 10))
     for images, labels in dataset:
         for i in range(img_count):
-            ax = plt.subplot(3, 3, i + 1)
+            plt.subplot(3, 3, i + 1)
             plt.imshow(images[i].numpy().astype("uint8"))
             # For the current index, get the label value (0.0 or 1.0)
             label_value = int(labels[i])
