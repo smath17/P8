@@ -26,7 +26,8 @@ def load_data(data_path, validation_percent=0.2):
         subset="training",
         seed=123,
         shuffle=True,
-        label_mode='binary',
+        label_mode='int',
+        labels='inferred',
         image_size=(img_height, img_width),
         batch_size=batch_size)
 
@@ -36,7 +37,8 @@ def load_data(data_path, validation_percent=0.2):
         subset="validation",
         seed=123,
         shuffle=True,
-        label_mode='binary',
+        label_mode='int',
+        labels='inferred',
         image_size=(img_height, img_width),
         batch_size=batch_size)
 
@@ -67,5 +69,5 @@ def visualize_data(dataset, img_count):
     plt.show()
 
 
-train_set, valid_set = load_data("C:\\Users\\the_p\\Desktop\\d_set")
+train_set, valid_set = load_data("genres")
 visualize_data(train_set, 9)

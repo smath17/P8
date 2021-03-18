@@ -26,7 +26,7 @@ def train_cnn_model(train_set, test_set):
     train_set = train_set.cache().prefetch(buffer_size=AUTOTUNE)
     test_set = test_set.cache().prefetch(buffer_size=AUTOTUNE)
 
-    num_classes = 2
+    num_classes = 28
 
     model = models.Sequential(layers=(
         layers.experimental.preprocessing.Rescaling(1. / 255),
