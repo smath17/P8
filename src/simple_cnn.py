@@ -89,9 +89,3 @@ def run_example():
     result = model.predict_classes(img)
     print(result[0])
 
-# entry point, run with image example or train model
-time_before = time.time()
-train_cnn_model()
-print("Time spent on training: " + str(time.time() - time_before))
-# run_example()
-
