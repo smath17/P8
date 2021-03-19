@@ -1,58 +1,52 @@
-import tensorflow as tf
 from os import path
 import time
-
-from tensorflow.keras import datasets, layers, models
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from keras.models import load_model
+from keras.preprocessing.image import img_to_array
 
 # make a prediction for a new image.
 from keras.preprocessing.image import load_img
-from keras.preprocessing.image import img_to_array
-from keras.models import load_model
+from tensorflow.keras import layers, models
 
 
-# https://www.tensorflow.org/tutorials/images/cnn
-def train_cnn_model():
-    (train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
-
-    # Normalize pixel values to be between 0 and 1
-    train_images, test_images = train_images / 255.0, test_images / 255.0
-
-    class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer',
-                   'dog', 'frog', 'horse', 'ship', 'truck']
-
+def train_cnn_model(train_set, test_set):
     """
-    plt.figure(figsize=(10, 10))
-    for i in range(25):
-        plt.subplot(5, 5, i + 1)
-        plt.xticks([])
-        plt.yticks([])
-        plt.grid(False)
-        plt.imshow(train_images[i], cmap=plt.cm.binary)
-        # The CIFAR labels happen to be arrays,
-        # which is why you need the extra index
-        plt.xlabel(class_names[train_labels[i][0]])
-    plt.show()
+    Trains and saves a CNN model. Arguments should be from load_data.
+
+    :param train_set: Dataset used for training
+    :param test_set: Dataset used for validation
     """
+    # Do not show version warnings
+    tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
-    model = models.Sequential()
-    model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)))
-    model.add(layers.MaxPooling2D((2, 2)))
-    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
-    model.add(layers.MaxPooling2D((2, 2)))
-    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+    # Cache data to avoid I/O bottleneck
+    AUTOTUNE = tf.data.experimental.AUTOTUNE
 
-    model.add(layers.Flatten())
-    model.add(layers.Dense(64, activation='relu'))
-    model.add(layers.Dense(10))
-    model.summary()
+    train_set = train_set.cache().prefetch(buffer_size=AUTOTUNE)
+    test_set = test_set.cache().prefetch(buffer_size=AUTOTUNE)
+
+    num_classes = 28
+
+    model = models.Sequential(layers=(
+        layers.experimental.preprocessing.Rescaling(1. / 255),
+        layers.Conv2D(32, 3, activation='relu'),
+        layers.MaxPooling2D(),
+        layers.Conv2D(32, 3, activation='relu'),
+        layers.MaxPooling2D(),
+        layers.Conv2D(32, 3, activation='relu'),
+        layers.MaxPooling2D(),
+        layers.Flatten(),
+        layers.Dense(128, activation='relu'),
+        layers.Dense(num_classes))
+    )
 
     model.compile(optimizer='adam',
                   loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                   metrics=['accuracy'])
 
-    history = model.fit(train_images, train_labels, epochs=10,
-                        validation_data=(test_images, test_labels))
+    history = model.fit(train_set, epochs=10,
+                        validation_data=test_set)
 
     """
     plt.plot(history.history['accuracy'], label='accuracy')
@@ -64,11 +58,7 @@ def train_cnn_model():
     plt.show()
     """
 
-    test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
-
-    print(test_acc)
     model.save("cnn.model")
-    # model.evaluate(test_images, test_labels)
 
 
 # https://machinelearningmastery.com/how-to-develop-a-cnn-from-scratch-for-cifar-10-photo-classification/
