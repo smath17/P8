@@ -67,7 +67,3 @@ def visualize_data(dataset, img_count):
             plt.axis("off")
 
     plt.show()
-
-
-train_set, valid_set = load_data("genres")
-visualize_data(train_set, 9)
