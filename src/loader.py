@@ -10,7 +10,7 @@ def load_data(data_path, validation_percent=0.2):
 
     :param validation_percent: Percentage saved for validation of model
     :param data_path: The path to dataset directory
-    :return: A tuple consisting of 2 tf.data.Datset objects.The training and validation datasets respectively.
+    :return: A tuple consisting of 2 tf.data.Dataset objects.The training and validation datasets respectively.
     """
     # Re-create path into object-oriented system
     data_dir = pathlib.Path(data_path)
