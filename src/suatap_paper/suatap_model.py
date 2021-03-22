@@ -44,7 +44,7 @@ def train_model(model: keras.Model, train_ds):
     """
     # Learning rate for icons = 0.001, for screenshots = 0.01
     model.compile(keras.optimizers.Adam(learning_rate=0.01))
-    model.evaluate(train_ds)
+    model.fit(train_ds)
 
 
 def feature_extract_layers(prev_layer, dropout_rate, filter):
