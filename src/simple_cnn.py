@@ -1,5 +1,4 @@
 from os import path
-import time
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from keras.models import load_model
@@ -40,14 +39,12 @@ def train_cnn_model(train_set, test_set):
         layers.Dense(128, activation='relu'),
         layers.Dense(num_classes))
     )
-
     model.compile(optimizer='adam',
                   loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                   metrics=['accuracy'])
 
     history = model.fit(train_set, epochs=10,
                         validation_data=test_set)
-
     """
     plt.plot(history.history['accuracy'], label='accuracy')
     plt.plot(history.history['val_accuracy'], label='val_accuracy')
@@ -57,7 +54,6 @@ def train_cnn_model(train_set, test_set):
     plt.legend(loc='lower right')
     plt.show()
     """
-
     model.save("cnn.model")
 
 
@@ -75,8 +71,7 @@ def load_image(filename):
     return img
 
 
-# load an image and predict the class
-def run_example():
+def predict_sample_image(class_name_list):
     # load the image
     if path.exists("sample_image.jpg"):
         img = load_image('sample_image.jpg')
@@ -85,7 +80,13 @@ def run_example():
 
     # load model
     model = load_model('cnn.model')
+
     # predict the class
     result = model.predict_classes(img)
-    print(result[0])
 
+    # Plot image
+    plt.imshow(img[0])
+    plt.title(class_name_list[result[0]])
+    plt.show()
+
+    print(class_name_list[result[0]])
