@@ -53,8 +53,9 @@ def download_images():
                             if not os.path.exists("genres/" + genre):
                                 os.mkdir("genres/" + genre)
                             # Copy the file from all_images to genre
-                            copyfile("all_images/" + row_media["steam_appid"] + ".jpg",
-                                     "genres/" + genre + "/" + row_media["steam_appid"] + ".jpg")
+                            if not os.path.exists("genres/" + genre + "/" + row_media["steam_appid"] + ".jpg"):
+                                copyfile("all_images/" + row_media["steam_appid"] + ".jpg",
+                                        "genres/" + genre + "/" + row_media["steam_appid"] + ".jpg")
                         break
                     else:
                         apps_prev_row += 1
