@@ -2,13 +2,13 @@ from tensorflow import keras
 from tensorflow.keras import layers
 
 
-# TODO: Figure out parameters from the paper
-def cnn(num_extractions, num_pools, num_classes, input_shape=(256, 256, 3)):
+def cnn_setup(fx_count, mp_count, class_count, input_shape=(256, 256, 3)):
     """
 
-    :param num_classes: Number of classes
-    :param num_pools: Number of max-pooling layers
-    :param num_extractions: Number of feature extractions to be done for each pooling layer
+    :rtype: keras.Model
+    :param class_count: Number of classes
+    :param mp_count: Number of max-pooling layers {3, 4, 5}
+    :param fx_count: Number of feature extraction layers {1, 2}
     :param input_shape: Tuple determining shape of input images (W, H, 3)
     """
 
@@ -17,22 +17,34 @@ def cnn(num_extractions, num_pools, num_classes, input_shape=(256, 256, 3)):
 
     # Initialize model by normalizing input
     init_batch_norm = keras.layers.BatchNormalization()(img_inputs)
-    save_layer = init_batch_norm
+    current_layer = init_batch_norm
 
-    # TODO: figure out the number of kernels (filter)
-    kernels = input_shape[0]
-    for m in range(num_pools):
-        for n in range(1, num_extractions + 1):
-            save_layer = feature_extract_layers(save_layer, 0.5, kernels * (2 ** m))
-        layers.MaxPooling2D(strides=2)(save_layer)
+    init_filter = 64
+    dropout_rate = 0.2
 
-    reduced_layer = dimension_reduction_layers(save_layer, 0.5)
-    output = classification_layers(reduced_layer, num_classes)
+    # Each MaxPool layer is preceded by a number of feature extractions
+    for mp in range(mp_count):
+        for fx in range(fx_count):
+            current_layer = feature_extract_layers(current_layer, dropout_rate, init_filter * (2 ** mp))
+        layers.MaxPooling2D(strides=2)(current_layer)
+
+    reduction_filter = 2 ** (mp_count - 2) * init_filter
+    reduced_layer = dimension_reduction_layers(current_layer, dropout_rate, reduction_filter)
+    output = classification_layers(reduced_layer, class_count)
 
     model = keras.Model(inputs=img_inputs, outputs=output, name="suatap_model")
-    model.summary()
+    return model
 
-    # keras.utils.plot_model(model, "suatap_model.png")
+
+def train_model(model: keras.Model, train_ds):
+    """
+
+    :param model: Model from suatap_model.cnn_setup()
+    :param train_ds: Training set, images should be of size (256, 256 ,3)
+    """
+    # Learning rate for icons = 0.001, for screenshots = 0.01
+    model.compile(keras.optimizers.Adam(learning_rate=0.01))
+    model.fit(train_ds)
 
 
 def feature_extract_layers(prev_layer, dropout_rate, filter):
@@ -49,8 +61,8 @@ def feature_extract_layers(prev_layer, dropout_rate, filter):
     return dropout
 
 
-def dimension_reduction_layers(prev_layer, dropout_rate):
-    conv1x1 = layers.Conv2D(1, kernel_size=1, use_bias=False, activation=layers.LeakyReLU())(prev_layer)
+def dimension_reduction_layers(prev_layer, dropout_rate, filter):
+    conv1x1 = layers.Conv2D(filter, kernel_size=1, use_bias=False, activation=layers.LeakyReLU())(prev_layer)
     batch_norm = layers.BatchNormalization()(conv1x1)
     dropout = layers.Dropout(dropout_rate)(batch_norm)
     max_pool = layers.MaxPooling2D()(dropout)
@@ -63,6 +75,3 @@ def classification_layers(prev_layer, num_classes):
     fully_c = layers.Dense(units=num_classes)(fully_2c)
     output = layers.Softmax()(fully_c)
     return output
-
-
-cnn(2, 1, 10)
