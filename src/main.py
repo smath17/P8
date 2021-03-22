@@ -1,4 +1,4 @@
-from simple_cnn import train_cnn_model
+from simple_cnn import train_cnn_model, predict_sample_image
 from loader import load_data
 import time
 import image_downloader
@@ -34,8 +34,8 @@ if __name__ == '__main__':
     # visualize_data(train_set, 9)
 
     # Predict on sample_image based on labels from the training set
-    # class_names = train_ds.class_names
-    # predict_sample_image(class_names)
+    class_names = train_ds.class_names
+    predict_sample_image(class_names)
 
     # Train model
-    train_model(train_ds, test_ds)
+    # train_model(train_ds, test_ds)

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from keras.models import load_model
 from keras.preprocessing.image import img_to_array
-
+import numpy as np
 # make a prediction for a new image.
 from keras.preprocessing.image import load_img
 from tensorflow.keras import layers, models
@@ -82,11 +82,22 @@ def predict_sample_image(class_name_list):
     model = load_model('cnn.model')
 
     # predict the class
-    result = model.predict_classes(img)
+    result = model.predict(img)
+
+    # Retrieve top 3 and reverse to get the highest first
+    top3 = np.argpartition(result[0], -3)[-3:]
+    top3 = top3[::-1]
+
+    # Print predicted label together with the probability
+    counter = 1
+    for value in top3:
+        print("Top " + str(counter) + ": " + class_name_list[value] + "\nProbability: " + str(result[0][value]))
+        counter += 1
 
     # Plot image
     plt.imshow(img[0])
-    plt.title(class_name_list[result[0]])
+    plt.title(class_name_list[top3[0]])
     plt.show()
 
-    print(class_name_list[result[0]])
+    # Print top 1
+    print(class_name_list[top3[0]])
