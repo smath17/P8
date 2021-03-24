@@ -1,26 +1,48 @@
 from simple_cnn import train_cnn_model, predict_sample_image
 from loader import load_data
 import time
+from datetime import timedelta
 import image_downloader
+from suatap_paper import suatap_model
+from tensorflow.python.client import device_lib
 
 
 def download_images():
     time_before = time.time()
     image_downloader.download_images()
-    print("Time spent on downloading images: " + str(time.time() - time_before))
+    stop_timer(time_before, "Time spent on downloading images")
 
 
 def load_data_from_directory(directory):
     time_before = time.time()
     train_dataset, test_dataset = load_data(directory)
-    print("Time spent on loading images: " + str(time.time() - time_before))
+    stop_timer(time_before, "Spent on loading images")
     return train_dataset, test_dataset
 
 
 def train_model(train_set, test_set):
     time_before = time.time()
     train_cnn_model(train_set, test_set)
-    print("Time spent on training: " + str(time.time() - time_before))
+    stop_timer(time_before, "Spent on training Simple_cnn")
+
+
+def train_suatap_model(train_ds, val_ds):
+    model = suatap_model.cnn_setup(1, 3, 27, (32, 32, 3))
+    time_start = time.time()
+    suatap_model.train_model(model, train_ds, val_ds)
+    stop_timer(time_start, "Spent on training Suatap et. al.")
+
+
+def stop_timer(time_start, text=" Spent on training"):
+    time_elapsed = time.time() - time_start
+    print(str(timedelta(seconds=time_elapsed)) + text)
+
+
+def show_devices():
+    """
+    Lists all devices available to Tensorflow/KEras
+    """
+    print(device_lib.list_local_devices())
 
 
 if __name__ == '__main__':
@@ -37,5 +59,11 @@ if __name__ == '__main__':
     class_names = train_ds.class_names
     predict_sample_image(class_names)
 
-    # Train model
+    # Train simple model
     # train_model(train_ds, test_ds)
+
+    # Train model from Suatap paper
+    # train_suatap_model(train_ds, test_ds)
+
+    # List available devices (CPU/GPU)
+    # show_devices()
