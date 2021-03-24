@@ -1,5 +1,7 @@
+import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
+import datetime
 
 
 def cnn_setup(fx_count, mp_count, class_count, input_shape=(256, 256, 3)):
@@ -26,7 +28,7 @@ def cnn_setup(fx_count, mp_count, class_count, input_shape=(256, 256, 3)):
     for mp in range(mp_count):
         for fx in range(fx_count):
             current_layer = feature_extract_layers(current_layer, dropout_rate, init_filter * (2 ** mp))
-        layers.MaxPooling2D(strides=2)(current_layer)
+        current_layer = layers.MaxPooling2D(strides=2)(current_layer)
 
     reduction_filter = 2 ** (mp_count - 2) * init_filter
     reduced_layer = dimension_reduction_layers(current_layer, dropout_rate, reduction_filter)
@@ -36,15 +38,34 @@ def cnn_setup(fx_count, mp_count, class_count, input_shape=(256, 256, 3)):
     return model
 
 
-def train_model(model: keras.Model, train_ds):
+def train_model(model: keras.Model, train_ds, val_ds):
     """
 
     :param model: Model from suatap_model.cnn_setup()
+    :param val_ds: Validation set
     :param train_ds: Training set, images should be of size (256, 256 ,3)
     """
+    train_ds, val_ds = prepare_data(train_ds, val_ds)
+
     # Learning rate for icons = 0.001, for screenshots = 0.01
-    model.compile(keras.optimizers.Adam(learning_rate=0.01))
-    model.fit(train_ds)
+    model.compile(keras.optimizers.Adam(learning_rate=0.001), loss=keras.losses.SparseCategoricalCrossentropy(),
+                  metrics=['accuracy'])
+    model.fit(train_ds, epochs=10, validation_data=val_ds, callbacks=[tensorboard_setup()], verbose=2)
+
+
+def tensorboard_setup():
+    log_dir = "logs/fit/suatap" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+    return tensorboard_callback
+
+
+def prepare_data(train_ds, val_ds):
+    # Cache data to avoid I/O bottleneck
+    AUTOTUNE = tf.data.experimental.AUTOTUNE
+
+    train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
+    val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
+    return train_ds, val_ds
 
 
 def feature_extract_layers(prev_layer, dropout_rate, filter):
