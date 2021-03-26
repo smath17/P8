@@ -33,9 +33,9 @@ def train_suatap_model(train_ds, val_ds):
     stop_timer(time_start, "Spent on training Suatap et. al.")
 
 
-def stop_timer(time_start, text=" Spent on training"):
+def stop_timer(time_start, text="Spent on training"):
     time_elapsed = time.time() - time_start
-    print(str(timedelta(seconds=time_elapsed)) + text)
+    print(str(timedelta(seconds=time_elapsed)) + " " + text)
 
 
 def show_devices():
