@@ -1,8 +1,8 @@
 import pandas as pd
 import os
 import json
-from shutil import copyfile
 import requests
+import ast
 
 
 def download_images():
@@ -20,45 +20,85 @@ def download_images():
     if not os.path.exists("genres"):
         os.mkdir("genres")
 
-    if not os.path.exists("all_images"):
-        os.mkdir("all_images")
-
     # iterate over rows with iterrows()
     apps_prev_row = 0
 
+    # Loop through every game in steam_media_data.csv
     for index_media, row_media in df_media.head(df_media.size).iterrows():
         # access data using column names
-        if index_media > 0:  # Fejl i csv ved 4118
-            if index_media % 1 == 0:
-                json_string = "[" + row_media['screenshots'][1:-2].replace("\'", "\"") + "}]"
-                screenshots = json.loads(json_string)
-                screenshot_link = screenshots[0]["path_thumbnail"]
+        if index_media == 0:
+            continue
 
-                found = False
-                for index_apps, row_apps in df_apps.tail(df_apps.size - apps_prev_row).iterrows():
-                    if row_media["steam_appid"] == row_apps["appid"]:
-                        print(row_media["steam_appid"], row_apps["genres"])
-                        found = True
+        # Convert screenshot column to a JSON string
+        json_string = "[" + row_media['screenshots'][1:-2].replace("\'", "\"") + "}]"
+        screenshots = json.loads(json_string)
 
-                        # If the image is not found in all_images, download it
-                        if not os.path.exists("all_images/" + row_media["steam_appid"] + ".jpg"):
-                            response = requests.get(screenshot_link)
-                            file = open("all_images/" + row_media["steam_appid"] + ".jpg", "wb")
-                            file.write(response.content)
-                            file.close()
+        # Find the corresponding game in the steam.csv file
+        found = False
+        for index_apps, row_apps in df_apps.tail(df_apps.size - apps_prev_row).iterrows():
+            if row_media["steam_appid"] == row_apps["appid"]:
+                found = True
 
-                        genres = row_apps["genres"].split(";")
-                        for genre in genres:
-                            # Create genre folders if it does not exist
-                            if not os.path.exists("genres/" + genre):
-                                os.mkdir("genres/" + genre)
-                            # Copy the file from all_images to genre
-                            if not os.path.exists("genres/" + genre + "/" + row_media["steam_appid"] + ".jpg"):
-                                copyfile("all_images/" + row_media["steam_appid"] + ".jpg",
-                                        "genres/" + genre + "/" + row_media["steam_appid"] + ".jpg")
-                        break
-                    else:
-                        apps_prev_row += 1
-                if not found:
-                    print(row_media["steam_appid"], "not found")
-                    apps_prev_row = 0
+                genres = row_apps["genres"].split(";")
+
+                # Write URLs to a file to download later.
+                # Thus we do not need to move the file later and we can start from that file instead.
+                # TODO This file is appended to every time. Not intended.
+                #  Should look if the line is already in there and append if not. Not important right now.
+                with open("files_to_download.txt", "a") as file:
+                    for screenshot in screenshots:
+                        file.write(str(row_media["steam_appid"]) + "|"
+                                   + screenshot["path_thumbnail"] + "|"
+                                   + str(genres) + "\n")
+
+                # Go to the next game
+                break
+            else:
+                apps_prev_row += 1
+
+        if not found:
+            print(row_media["steam_appid"], "not found")
+            apps_prev_row = 0
+
+
+def download_images_from_file():
+    if not os.path.exists("files_to_download.txt"):
+        raise Exception("File does not exist")
+
+    file = open("files_to_download.txt", "r")
+    lines = file.readlines()
+
+    screenshot_counter = 0
+    previous_id = lines[0].split("|")[0]  # First app id
+
+    # Iterate through all lines in the file.
+    for line in lines:
+        app_id = line.split("|")[0]
+        app_url = line.split("|")[1]
+        app_genres = line.split("|")[2]
+
+        print("ID:" + app_id + " - URL:" + app_url + " - Genres:" + app_genres)
+
+        if line.split("|")[0] == previous_id:
+            screenshot_counter += 1
+        else:
+            screenshot_counter = 0
+
+        # Convert genres to a list of strings
+        app_genres = ast.literal_eval(app_genres)
+        for genre in app_genres:
+            # Create genre folders if it does not exist
+            if not os.path.exists("genres/" + genre):
+                os.mkdir("genres/" + genre)
+
+            # Check if the image is already there
+            if not os.path.exists("genres/" + genre + "/" + app_id + "_" + str(screenshot_counter) + ".jpg"):
+                # Download the file
+                file = open("genres/" + genre + "/" + app_id + "_" + str(screenshot_counter) + ".jpg", "wb")
+                response = requests.get(app_url)
+                file.write(response.content)
+                file.close()
+
+        # Keep track of the previous id to know when to reset the counter.
+        previous_id = app_id
+

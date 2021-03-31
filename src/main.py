@@ -7,9 +7,15 @@ from suatap_paper import suatap_model
 from tensorflow.python.client import device_lib
 
 
-def download_images():
+def gather_images():
     time_before = time.time()
     image_downloader.download_images()
+    stop_timer(time_before, "Time spent on gathering URL links: ")
+
+
+def download_images():
+    time_before = time.time()
+    image_downloader.download_images_from_file()
     stop_timer(time_before, "Time spent on downloading images")
 
 
@@ -40,24 +46,25 @@ def stop_timer(time_start, text="Spent on training"):
 
 def show_devices():
     """
-    Lists all devices available to Tensorflow/KEras
+    Lists all devices available to Tensorflow/Keras
     """
     print(device_lib.list_local_devices())
 
 
 if __name__ == '__main__':
-    # Download images
-    # download_images()
+    # Gather and Download images
+    # gather_images()
+    download_images()
 
     # Load data
-    train_ds, test_ds = load_data_from_directory("genres")
+    # train_ds, test_ds = load_data_from_directory("genres")
 
     # Visualize 9 images from the training set
     # visualize_data(train_set, 9)
 
     # Predict on sample_image based on labels from the training set
-    class_names = train_ds.class_names
-    predict_sample_image(class_names)
+    # class_names = train_ds.class_names
+    # predict_sample_image(class_names)
 
     # Train simple model
     # train_model(train_ds, test_ds)
