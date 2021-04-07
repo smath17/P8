@@ -1,5 +1,5 @@
 from simple_model.simple_cnn import train_cnn_model
-from loader import load_data
+from loader import load_data, visualize_data
 import time
 from datetime import timedelta
 from image_processing import image_downloader, image_labeler
@@ -66,10 +66,10 @@ if __name__ == '__main__':
     label_images()
 
     # Load data
-    # train_ds, test_ds = load_data_from_directory("genres")
+    train_ds, test_ds = load_data_from_directory("../resources/all_images")
 
     # Visualize 9 images from the training set
-    # visualize_data(train_set, 9)
+    visualize_data(train_ds, 9)
 
     # Predict on sample_image based on labels from the training set
     # class_names = train_ds.class_names
