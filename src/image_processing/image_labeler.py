@@ -5,18 +5,17 @@ from os import walk
 def label_images():
     # setup columns based on tags.txt
     columns = ["appid"]
-    with open("tags.txt") as file:
+    with open("../resources/tags.txt") as file:
         for line in file:
             columns.append(line[:-1])
 
     # read from steamspy_tag_data.csv using previous columns
-    df_tags = pd.read_csv("steamspy_tag_data.csv", usecols=columns)
+    df_tags = pd.read_csv("../resources/steamspy_tag_data.csv", usecols=columns)
 
     # write appid + tags to app_labels.txt
     file = open("app_labels.txt", "w")
 
     app_labels = {}
-
 
     # iterate through csv as tuples
     for row in df_tags.head(df_tags.size).itertuples():
@@ -35,7 +34,7 @@ def label_images():
             file.write(output + "\n")
     file.close()
 
-    _, _, filenames = next(walk("all_images"))
+    _, _, filenames = next(walk("../resources/all_images"))
 
     file = open("image_labels.txt", "w")
 

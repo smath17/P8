@@ -1,11 +1,11 @@
-from simple_cnn import train_cnn_model, predict_sample_image
+from simple_model.simple_cnn import train_cnn_model
 from loader import load_data
 import time
 from datetime import timedelta
-import image_downloader
-import image_labeler
+from image_processing import image_downloader, image_labeler
 from suatap_paper import suatap_model
 from tensorflow.python.client import device_lib
+
 
 def gather_images():
     time_before = time.time()
@@ -18,10 +18,12 @@ def download_images():
     image_downloader.download_images_from_file()
     stop_timer(time_before, "Time spent on downloading images")
 
+
 def label_images():
     time_before = time.time()
     image_labeler.label_images()
     stop_timer(time_before, "Time spent on labeling images")
+
 
 def load_data_from_directory(directory):
     time_before = time.time()
@@ -57,8 +59,8 @@ def show_devices():
 
 if __name__ == '__main__':
     # Gather and Download images
-    #gather_images()
-    #download_images()
+    gather_images()
+    download_images()
 
     # Label images
     label_images()

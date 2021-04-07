@@ -79,7 +79,7 @@ def predict_sample_image(class_name_list):
         img = load_image('sample_image.png')
 
     # load model
-    model = load_model('cnn.model')
+    model = load_model('../cnn.model')
 
     # predict the class
     result = model.predict(img)
