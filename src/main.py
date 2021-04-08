@@ -1,10 +1,10 @@
-from simple_model.simple_cnn import train_cnn_model
+from simple_model.simple_cnn import train_cnn_model, predict_sample_image
 from loader import load_data, visualize_data
-import time
 from datetime import timedelta
 from image_processing import image_downloader, image_labeler
 from suatap_paper import suatap_model
 from tensorflow.python.client import device_lib
+import time
 
 
 def gather_images():
@@ -71,12 +71,14 @@ if __name__ == '__main__':
     # Visualize 9 images from the training set
     visualize_data(train_ds, 9)
 
-    # Predict on sample_image based on labels from the training set
-    # class_names = train_ds.class_names
-    # predict_sample_image(class_names)
-
     # Train simple model
-    # train_model(train_ds, test_ds)
+    train_model(train_ds, test_ds)
+
+    # Predict on sample_image based on labels from the training set
+    img_labels = []
+    for k, v in train_ds.class_indices.items():
+        img_labels.append(k)
+    predict_sample_image(img_labels)
 
     # Train model from Suatap paper
     # train_suatap_model(train_ds, test_ds)

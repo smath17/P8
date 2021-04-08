@@ -22,10 +22,10 @@ def train_cnn_model(train_set, test_set):
     # Cache data to avoid I/O bottleneck
     AUTOTUNE = tf.data.experimental.AUTOTUNE
 
-    train_set = train_set.cache().prefetch(buffer_size=AUTOTUNE)
-    test_set = test_set.cache().prefetch(buffer_size=AUTOTUNE)
+    #train_set = train_set.cache().prefetch(buffer_size=AUTOTUNE)
+    #test_set = test_set.cache().prefetch(buffer_size=AUTOTUNE)
 
-    num_classes = 28
+    num_classes = len(train_set.class_indices.items())
 
     model = models.Sequential(layers=(
         layers.experimental.preprocessing.Rescaling(1. / 255),
@@ -40,7 +40,7 @@ def train_cnn_model(train_set, test_set):
         layers.Dense(num_classes))
     )
     model.compile(optimizer='adam',
-                  loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                  loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
                   metrics=['accuracy'])
 
     history = model.fit(train_set, epochs=10,
@@ -73,13 +73,13 @@ def load_image(filename):
 
 def predict_sample_image(class_name_list):
     # load the image
-    if path.exists("sample_image.jpg"):
-        img = load_image('sample_image.jpg')
+    if path.exists("simple_model/sample_image.jpg"):
+        img = load_image('simple_model/sample_image.jpg')
     else:
-        img = load_image('sample_image.png')
+        img = load_image('simple_model/sample_image.png')
 
     # load model
-    model = load_model('../cnn.model')
+    model = load_model('cnn.model')
 
     # predict the class
     result = model.predict(img)
