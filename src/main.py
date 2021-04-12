@@ -39,7 +39,7 @@ def train_model(train_set, test_set):
 
 
 def train_suatap_model(train_ds, val_ds):
-    model = suatap_model.cnn_setup(1, 3, 27, (32, 32, 3))
+    model = suatap_model.cnn_setup(1, 3, len(train_ds.class_indices.items()), (32, 32, 3))
     time_start = time.time()
     suatap_model.train_model(model, train_ds, val_ds)
     stop_timer(time_start, "Spent on training Suatap et. al.")

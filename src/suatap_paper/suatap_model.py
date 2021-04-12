@@ -50,7 +50,7 @@ def train_model(model: keras.Model, train_ds, val_ds):
     train_ds, val_ds = prepare_data(train_ds, val_ds)
 
     # Learning rate for icons = 0.001, for screenshots = 0.01
-    model.compile(keras.optimizers.Adam(learning_rate=0.001), loss=keras.losses.SparseCategoricalCrossentropy(),
+    model.compile(keras.optimizers.Adam(learning_rate=0.001), loss=keras.losses.CategoricalCrossentropy(),
                   metrics=['accuracy'])
     model.fit(train_ds, epochs=10, validation_data=val_ds, callbacks=[tensorboard_setup()], verbose=2)
 
@@ -64,9 +64,8 @@ def tensorboard_setup():
 def prepare_data(train_ds, val_ds):
     # Cache data to avoid I/O bottleneck
     AUTOTUNE = tf.data.experimental.AUTOTUNE
-
-    train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
-    val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
+    #train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
+    #val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
     return train_ds, val_ds
 
 
