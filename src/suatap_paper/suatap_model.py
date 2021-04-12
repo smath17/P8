@@ -47,7 +47,6 @@ def train_model(model: keras.Model, train_ds, val_ds):
     :param val_ds: Validation set
     :param train_ds: Training set, images should be of size (256, 256 ,3)
     """
-    train_ds, val_ds = prepare_data(train_ds, val_ds)
 
     # Learning rate for icons = 0.001, for screenshots = 0.01
     model.compile(keras.optimizers.Adam(learning_rate=0.001), loss=keras.losses.CategoricalCrossentropy(),
@@ -59,15 +58,6 @@ def tensorboard_setup():
     log_dir = "logs/fit/suatap/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
     return tensorboard_callback
-
-
-def prepare_data(train_ds, val_ds):
-    # Cache data to avoid I/O bottleneck
-    AUTOTUNE = tf.data.experimental.AUTOTUNE
-    #train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
-    #val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
-    return train_ds, val_ds
-
 
 def feature_extract_layers(prev_layer, dropout_rate, init_filter, current_maxpool_count):
     """
