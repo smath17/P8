@@ -43,8 +43,7 @@ def label_images():
         if app_labels.get(app_id) is not None:
             output = filename + "|" + str(app_labels.get(app_id))
             file.write(output + "\n")
-        else:
-            file.write(filename + "|[]\n")
+
     file.close()
 
 
