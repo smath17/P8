@@ -19,4 +19,4 @@ fi
 
 ## Run actual analysis
 ## The benefit with using multiple srun commands is that this creates sub-jobs for your sbatch script and be uded for advanced usage with SLURM (e.g. create checkpoints, recovery, ect)
-srun --gres=gpu:1 singularity exec --nv p8.sif python P8/src/main.py
+srun --gres=gpu:1 singularity exec --nv p8.sif python main.py
