@@ -33,7 +33,7 @@ def download_images():
                            + screenshot["path_thumbnail"] + "\n")
 
 
-def download_images_from_file():
+def download_images_from_file(debug=false):
     if not os.path.exists("files_to_download.txt"):
         raise Exception("File does not exist")
 
@@ -49,7 +49,8 @@ def download_images_from_file():
         app_id = line.split("|")[0]
         app_url = line.split("|")[1]
 
-        print("ID:" + app_id + " - URL:" + app_url)
+        if debug:
+            print("ID:" + app_id + " - URL:" + app_url)
 
         if line.split("|")[0] == previous_id:
             screenshot_counter += 1
