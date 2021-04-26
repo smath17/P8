@@ -49,9 +49,11 @@ def train_model(model: keras.Model, train_ds, val_ds):
     """
 
     # Learning rate for icons = 0.001, for screenshots = 0.01
-    model.compile(keras.optimizers.Adam(learning_rate=0.001), loss=keras.losses.CategoricalCrossentropy(),
+    model.compile(keras.optimizers.Adam(learning_rate=0.01), loss=keras.losses.CategoricalCrossentropy(),
                   metrics=['accuracy'])
     model.fit(train_ds, epochs=10, validation_data=val_ds, callbacks=[tensorboard_setup()], verbose=2)
+
+    model.save("logs/fit/suatap/model")
 
 
 def tensorboard_setup():

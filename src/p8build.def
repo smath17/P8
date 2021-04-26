@@ -1,0 +1,7 @@
+BootStrap: docker
+From: nvcr.io/nvidia/tensorflow:20.10-tf2-py3
+
+%post
+pip install keras
+pip install pandas
+pip install matplotlib
