@@ -1,8 +1,11 @@
 import datetime
 
+import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
+
+from simple_model.simple_cnn import load_image
 
 
 def cnn_setup(fx_count, mp_count, class_count, input_shape=(256, 256, 3)):
@@ -61,6 +64,7 @@ def tensorboard_setup():
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
     return tensorboard_callback
 
+
 def feature_extract_layers(prev_layer, dropout_rate, init_filter, current_maxpool_count):
     """
 
@@ -93,3 +97,28 @@ def classification_layers(prev_layer, num_classes):
     fully_c = layers.Dense(units=num_classes)(fully_2c)
     output = layers.Softmax()(fully_c)
     return output
+
+
+def inference_mode(img_path):
+    with open("../resources/tags.txt") as f:
+        labels = [line.rstrip('\n') for line in f]
+
+    # TODO: Can be modified to do multiple at once
+    images = load_image(img_path, 256)
+
+    model: keras.Model = keras.models.load_model("logs/fit/suatap/model")
+
+    prediction = model(images, training=False)
+
+    # Retrieve top 3 and reverse to get the highest first
+    top3 = np.argpartition(prediction[0], -3)[-3:]
+    top3 = top3[::-1]
+
+    # Total distribution
+    # print(prediction)
+
+    # Print predicted label together with the probability
+    counter = 1
+    for value in top3:
+        print("Top " + str(counter) + ": " + labels[value] + "\nProbability: " + str(prediction[0][value]))
+        counter += 1

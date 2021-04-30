@@ -5,6 +5,7 @@ from image_processing import image_downloader, image_labeler
 from suatap_paper import suatap_model
 from tensorflow.python.client import device_lib
 import time
+import sys
 
 
 def gather_images():
@@ -69,19 +70,27 @@ if __name__ == '__main__':
     train_ds, test_ds = load_data_from_directory("../resources/all_images")
 
     # Visualize 9 images from the training set
-    visualize_data(train_ds, 9)
+    # visualize_data(train_ds, 9)
 
     # Train simple model
-    train_model(train_ds, test_ds)
+    # train_model(train_ds, test_ds)
 
     # Predict on sample_image based on labels from the training set
-    img_labels = []
-    for k, v in train_ds.class_indices.items():
-        img_labels.append(k)
-    predict_sample_image(img_labels)
+    # img_labels = []
+    # for k, v in train_ds.class_indices.items():
+    #     img_labels.append(k)
+    # predict_sample_image(img_labels)
 
     # Train model from Suatap paper
     # train_suatap_model(train_ds, test_ds)
 
     # List available devices (CPU/GPU)
     # show_devices()
+
+    if sys.argv[1] == "suatap":
+        train_suatap_model(train_ds, test_ds)
+    else:
+        train_model(train_ds, test_ds)
+
+    # Predict from Suatap
+    suatap_model.inference_mode("C:\\Users\\the_p\\Desktop\\genres\\Action")
