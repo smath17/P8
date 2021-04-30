@@ -5,7 +5,7 @@ from image_processing import image_downloader, image_labeler
 from suatap_paper import suatap_model
 from tensorflow.python.client import device_lib
 import time
-import sys
+import argparse
 
 
 def gather_images():
@@ -59,38 +59,54 @@ def show_devices():
 
 
 if __name__ == '__main__':
-    # Gather and Download images
-    gather_images()
-    download_images()
+    # Initialize CLI arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-dl", "--download", action="store_true")
+    parser.add_argument("--skip_data", action="store_true")
+    parser.add_argument("-simple", "--simple_cnn", action="store_true")
+    parser.add_argument("--predict_simple", action="store_true")
+    parser.add_argument("--suatap", action="store_true")
+    parser.add_argument("--devices", action="store_true")
+    parser.add_argument("--predict_suatap", action="store_true")
+    parser.add_argument("--visualize", action="store_true")
 
-    # Label images
-    label_images()
+    cli_args = parser.parse_args()
+
+    # Gather and Download images
+    if cli_args.download:
+        gather_images()
+        download_images()
+
+        # Label images
+        label_images()
 
     # Load data
-    train_ds, test_ds = load_data_from_directory("../resources/all_images")
+    if not cli_args.skip_data:
+        train_ds, test_ds = load_data_from_directory("../resources/all_images")
 
     # Visualize 9 images from the training set
-    # visualize_data(train_ds, 9)
+    if cli_args.visualize:
+        visualize_data(train_ds, 9)
 
     # Train simple model
-    # train_model(train_ds, test_ds)
-
-    # Predict on sample_image based on labels from the training set
-    # img_labels = []
-    # for k, v in train_ds.class_indices.items():
-    #     img_labels.append(k)
-    # predict_sample_image(img_labels)
-
-    # Train model from Suatap paper
-    # train_suatap_model(train_ds, test_ds)
-
-    # List available devices (CPU/GPU)
-    # show_devices()
-
-    if sys.argv[1] == "suatap":
-        train_suatap_model(train_ds, test_ds)
-    else:
+    if cli_args.simple_cnn:
         train_model(train_ds, test_ds)
 
+    # Predict on sample_image based on labels from the training set
+    if cli_args.predict_simple:
+        img_labels = []
+        for k, v in train_ds.class_indices.items():
+            img_labels.append(k)
+        predict_sample_image(img_labels)
+
+    # Train model from Suatap paper
+    if cli_args.suatap:
+        train_suatap_model(train_ds, test_ds)
+
+    # List available devices (CPU/GPU)
+    if cli_args.devices:
+        show_devices()
+
     # Predict from Suatap
-    suatap_model.inference_mode("C:\\Users\\the_p\\Desktop\\genres\\Action")
+    if cli_args.predict_suatap:
+        suatap_model.inference_mode("")
