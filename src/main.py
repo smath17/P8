@@ -60,15 +60,16 @@ def show_devices():
 
 if __name__ == '__main__':
     # Initialize CLI arguments
+    # -h for help
     parser = argparse.ArgumentParser()
-    parser.add_argument("-dl", "--download", action="store_true")
-    parser.add_argument("--skip_data", action="store_true")
-    parser.add_argument("-simple", "--simple_cnn", action="store_true")
-    parser.add_argument("--predict_simple", action="store_true")
-    parser.add_argument("--suatap", action="store_true")
-    parser.add_argument("--devices", action="store_true")
-    parser.add_argument("--predict_suatap", action="store_true")
-    parser.add_argument("--visualize", action="store_true")
+    parser.add_argument("-dl", "--download", action="store_true", help="Download and label dataset")
+    parser.add_argument("--skip_data", action="store_true", help="Skip loading dataset")
+    parser.add_argument("-simple", "--simple_cnn", action="store_true", help="Train simple_cnn model")
+    parser.add_argument("--predict_simple", action="store_true", help="Predict labels for simple_cnn model")
+    parser.add_argument("--suatap", action="store_true", help="Train Suatap model")
+    parser.add_argument("--devices", action="store_true", help="Show available (GPU) devices")
+    parser.add_argument("--predict_suatap", action="store_true", help="Predict labels for Suatap model")
+    parser.add_argument("--visualize", action="store_true", help="Visualize 9 images and their labels")
 
     cli_args = parser.parse_args()
 
