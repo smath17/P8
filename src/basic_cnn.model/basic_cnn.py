@@ -1,30 +1,39 @@
+import ast
+import pandas as pd
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.preprocessing import image
 from keras.models import load_model
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
-import cv2
 import os
 """
-img = image.load_img("C:/Users/MadPe/Documents/AAU/Kandidat/8 semester/P8/src/basic_cnn.model/train/Racing/4290.jpg")
-plt.imshow(img)
-plt.show()
-
-print(cv2.imread("C:/Users/MadPe/Documents/AAU/Kandidat/8 semester/P8/src/basic_cnn.model/train/Racing/4290.jpg").shape)
-
 train = ImageDataGenerator(rescale= 1/255)
 validation =ImageDataGenerator(rescale= 1/255)
 
-train_dataset = train.flow_from_directory('C:/Users/MadPe/Documents/AAU/Kandidat/8 semester/P8/src/basic_cnn.model/train/',
+column_labeled_images = ["filename", "labels"]
+df_labeled_images = pd.read_csv("../image_labels.txt", sep="|", names=column_labeled_images)
+#df_labeled_images["labels"] = df_labeled_images["labels"].apply(lambda x: ast.literal_eval(x))
+
+train_dataset = train.flow_from_dataframe(df_labeled_images,
+                                          '../../resources/all_images/',
+                                          x_col="filename",
+                                          y_col="labels",
                                           target_size= (200,200),
+                                          subset="training",
+                                          seed=15,
                                           batch_size= 25,
                                           class_mode= 'binary')
 
-validation_dataset = train.flow_from_directory('C:/Users/MadPe/Documents/AAU/Kandidat/8 semester/P8/src/basic_cnn.model/validation/',
-                                          target_size= (200,200),
-                                          batch_size= 25,
-                                          class_mode= 'binary')
+validation_dataset = train.flow_from_dataframe(df_labeled_images,
+                                               '../../resources/all_images/',
+                                               x_col="filename",
+                                               y_col="labels",
+                                               target_size= (200,200),
+                                               subset="training",
+                                               seed=15,
+                                               batch_size= 25,
+                                               class_mode= 'binary')
 
 print(train_dataset.class_indices)
 
@@ -58,7 +67,7 @@ model.fit(train_dataset,
 model.save("basic.cnn")
 """
 
-dir_path = 'C:/Users/MadPe/Documents/AAU/Kandidat/8 semester/P8/src/basic_cnn.model/test/'
+dir_path = 'test/'
 model = load_model('basic.cnn')
 
 for i in os.listdir(dir_path):

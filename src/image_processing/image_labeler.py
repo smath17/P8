@@ -38,10 +38,39 @@ def label_images():
 
     file = open("image_labels.txt", "w")
 
+    race_count = 0
+    strategy_count = 0
     for filename in filenames:
         app_id = str(filename.split("_")[0])
         if app_labels.get(app_id) is not None:
-            output = filename + "|" + str(app_labels.get(app_id))
+            if app_labels.get(app_id)[0] == 'racing':
+                race_count += 1
+            elif app_labels.get(app_id)[0] == 'strategy':
+                strategy_count += 1
+
+    print(strategy_count)
+    print(race_count)
+    balanced_count = min(strategy_count, race_count)
+    print(balanced_count)
+    race_count = 0
+    strategy_count = 0
+
+    for filename in filenames:
+        app_id = str(filename.split("_")[0])
+
+        if app_labels.get(app_id) is not None:
+            if app_labels.get(app_id)[0] == "racing":
+                if race_count < balanced_count:
+                    race_count += 1
+                else:
+                    continue
+            elif app_labels.get(app_id)[0] == "strategy":
+                if strategy_count < balanced_count:
+                    strategy_count += 1
+                else:
+                    continue
+
+            output = filename + "|" + app_labels.get(app_id)[0]
             file.write(output + "\n")
 
     file.close()

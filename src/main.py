@@ -76,7 +76,7 @@ if __name__ == '__main__':
     # Gather and Download images
     if cli_args.download:
         gather_images()
-        download_images()
+        #download_images()
 
         # Label images
         label_images()
