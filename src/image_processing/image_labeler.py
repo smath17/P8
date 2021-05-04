@@ -74,5 +74,3 @@ def label_images():
             file.write(output + "\n")
 
     file.close()
-
-
