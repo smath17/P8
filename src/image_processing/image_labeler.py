@@ -3,11 +3,16 @@ from os import walk
 
 
 def label_images():
+    label_count = 0
+
     # setup columns based on tags.txt
     columns = ["appid"]
     with open("../resources/tags.txt") as file:
         for line in file:
             columns.append(line[:-1])
+            label_count += 1
+
+    binary = label_count == 2
 
     # read from steamspy_tag_data.csv using previous columns
     df_tags = pd.read_csv("../resources/steamspy_tag_data.csv", usecols=columns)
@@ -38,39 +43,52 @@ def label_images():
 
     file = open("image_labels.txt", "w")
 
-    race_count = 0
-    strategy_count = 0
-    for filename in filenames:
-        app_id = str(filename.split("_")[0])
-        if app_labels.get(app_id) is not None:
-            if app_labels.get(app_id)[0] == 'racing':
-                race_count += 1
-            elif app_labels.get(app_id)[0] == 'strategy':
-                strategy_count += 1
+    # multi labeling
+    if not binary:
+        for filename in filenames:
+            app_id = str(filename.split("_")[0])
+            if app_labels.get(app_id) is not None:
+                output = filename + "|" + str(app_labels.get(app_id))
+                file.write(output + "\n")
+        file.close()
 
-    print(strategy_count)
-    print(race_count)
-    balanced_count = min(strategy_count, race_count)
-    print(balanced_count)
-    race_count = 0
-    strategy_count = 0
+    # binary labels
+    else:
+        label_1_count = 0
+        label_2_count = 0
+        label_1 = columns[1]
+        label_2 = columns[2]
 
-    for filename in filenames:
-        app_id = str(filename.split("_")[0])
+        for filename in filenames:
+            app_id = str(filename.split("_")[0])
+            if app_labels.get(app_id) is not None:
+                if app_labels.get(app_id)[0] == label_1:
+                    label_1_count += 1
+                elif app_labels.get(app_id)[0] == label_2:
+                    label_2_count += 1
 
-        if app_labels.get(app_id) is not None:
-            if app_labels.get(app_id)[0] == "racing":
-                if race_count < balanced_count:
-                    race_count += 1
-                else:
-                    continue
-            elif app_labels.get(app_id)[0] == "strategy":
-                if strategy_count < balanced_count:
-                    strategy_count += 1
-                else:
-                    continue
+        balanced_count = min(label_1_count, label_2_count)
+        print("'{}':{}, '{}':{}\nUsing {} of each".format(label_1, label_1_count, label_2, label_2_count, balanced_count))
 
-            output = filename + "|" + app_labels.get(app_id)[0]
-            file.write(output + "\n")
+        label_1_count = 0
+        label_2_count = 0
 
-    file.close()
+        for filename in filenames:
+            app_id = str(filename.split("_")[0])
+
+            if app_labels.get(app_id) is not None:
+                if app_labels.get(app_id)[0] == label_1:
+                    if label_1_count < balanced_count:
+                        label_1_count += 1
+                    else:
+                        continue
+                elif app_labels.get(app_id)[0] == label_2:
+                    if label_2_count < balanced_count:
+                        label_2_count += 1
+                    else:
+                        continue
+
+                output = filename + "|" + app_labels.get(app_id)[0]
+                file.write(output + "\n")
+
+        file.close()
