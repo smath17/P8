@@ -11,7 +11,7 @@ import argparse
 
 def gather_images():
     time_before = time.time()
-    image_downloader.download_images()
+    image_downloader.gather_images()
     stop_timer(time_before, "Time spent on gathering URL links: ")
 
 
@@ -80,8 +80,9 @@ if __name__ == '__main__':
 
     # Gather and Download images
     if cli_args.download:
+        image_labeler.label_apps()
         gather_images()
-        download_images()
+        #download_images()
 
     # Label images
     if cli_args.label:

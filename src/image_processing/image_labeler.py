@@ -2,17 +2,12 @@ import pandas as pd
 from os import walk
 
 
-def label_images():
-    label_count = 0
-
+def label_apps():
     # setup columns based on tags.txt
     columns = ["appid"]
     with open("../resources/tags.txt") as file:
         for line in file:
             columns.append(line[:-1])
-            label_count += 1
-
-    binary = label_count == 2
 
     # read from steamspy_tag_data.csv using previous columns
     df_tags = pd.read_csv("../resources/steamspy_tag_data.csv", usecols=columns)
@@ -38,6 +33,21 @@ def label_images():
             output = output + str(tags)
             file.write(output + "\n")
     file.close()
+
+
+def label_images():
+    label_count = 0
+
+    # setup columns based on tags.txt
+    columns = ["appid"]
+    with open("../resources/tags.txt") as file:
+        for line in file:
+            columns.append(line[:-1])
+            label_count += 1
+
+    binary = label_count == 2
+
+    app_labels = open("app_labels.txt", "r").readlines()
 
     _, _, filenames = next(walk("../resources/all_images"))
 
