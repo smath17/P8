@@ -62,6 +62,7 @@ if __name__ == '__main__':
     # Initialize CLI arguments
     # -h for help
     parser = argparse.ArgumentParser()
+    parser.add_argument("-gather", "--gather_urls", action="store_true", help="Prepare dataset for downloading images")
     parser.add_argument("-dl", "--download", action="store_true", help="Download dataset")
     parser.add_argument("-label", action="store_true", help="Label dataset")
     parser.add_argument("--skip_data", action="store_true", help="Skip loading dataset")
@@ -78,11 +79,14 @@ if __name__ == '__main__':
 
     cli_args = parser.parse_args()
 
-    # Gather and Download images
-    if cli_args.download:
+    # Gather image URLs
+    if cli_args.gather_urls:
         image_labeler.label_apps()
         gather_images()
-        #download_images()
+
+    # Download images
+    if cli_args.download:
+        download_images()
 
     # Label images
     if cli_args.label:
