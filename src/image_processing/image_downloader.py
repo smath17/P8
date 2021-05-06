@@ -33,7 +33,7 @@ def download_images():
                            + screenshot["path_thumbnail"] + "\n")
 
 
-def download_images_from_file(debug=false):
+def download_images_from_file(debug=False):
     if not os.path.exists("files_to_download.txt"):
         raise Exception("File does not exist")
 
