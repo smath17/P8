@@ -68,7 +68,7 @@ def load_data(data_path, validation_percent=0.2, batch_size=32, img_height=32, i
         x_col="filename",
         y_col="labels",
         target_size=(img_height, img_width),
-        subset="training",
+        subset="validation",
         seed=15,
         shuffle=True,
         data_format=None,
