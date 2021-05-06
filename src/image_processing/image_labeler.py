@@ -47,7 +47,11 @@ def label_images():
 
     binary = label_count == 2
 
-    app_labels = open("app_labels.txt", "r").readlines()
+    app_labels = {}
+    with open("app_labels.txt") as app_labels_file:
+        for line in app_labels_file:
+            split = line.split("|")
+            app_labels[split[0]] = split[1].strip()
 
     _, _, filenames = next(walk("../resources/all_images"))
 
