@@ -1,3 +1,4 @@
+import datetime
 from os import path
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,14 +21,21 @@ def train_cnn_model(train_set, test_set):
     tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
     num_classes = len(train_set.class_indices.items())
+    dropout_rate = 0.2
 
     model = models.Sequential(layers=(
         layers.experimental.preprocessing.Rescaling(1. / 255),
         layers.Conv2D(32, 3, activation='relu'),
+        layers.BatchNormalization(),
+        layers.Dropout(dropout_rate),
         layers.MaxPooling2D(),
         layers.Conv2D(32, 3, activation='relu'),
+        layers.BatchNormalization(),
+        layers.Dropout(dropout_rate),
         layers.MaxPooling2D(),
         layers.Conv2D(32, 3, activation='relu'),
+        layers.BatchNormalization(),
+        layers.Dropout(dropout_rate),
         layers.MaxPooling2D(),
         layers.Flatten(),
         layers.Dense(128, activation='relu'),
@@ -36,15 +44,15 @@ def train_cnn_model(train_set, test_set):
 
     # https://www.tensorflow.org/api_docs/python/tf/keras/metrics
     model.compile(optimizer='adam',
-                  loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
+                  loss=tf.keras.losses.BinaryCrossentropy,
                   metrics=[tf.keras.metrics.Accuracy(),
                            tf.keras.metrics.AUC(multi_label=True),
                            tf.keras.metrics.Recall(),
                            tf.keras.metrics.CategoricalAccuracy(),
                            tf.keras.metrics.CategoricalCrossentropy()])
 
-    history = model.fit(train_set, epochs=10,
-                        validation_data=test_set)
+    history = model.fit(train_set, epochs=100,
+                        validation_data=test_set, callbacks=[tensorboard_setup()], verbose=2)
 
     plt.subplot(3, 2, 1)
     plt.plot(history.history['loss'], label='Loss')
@@ -70,6 +78,12 @@ def train_cnn_model(train_set, test_set):
     plt.show()
 
     model.save("cnn.model")
+
+
+def tensorboard_setup():
+    log_dir = "logs/fit/simple/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+    return tensorboard_callback
 
 
 # https://machinelearningmastery.com/how-to-develop-a-cnn-from-scratch-for-cifar-10-photo-classification/
