@@ -1,9 +1,10 @@
-import pathlib
 import ast
-import numpy as np
+import pathlib
+
 import matplotlib.pyplot as plt
-import tensorflow as tf
+import numpy as np
 import pandas as pd
+import tensorflow as tf
 
 
 def load_data(data_path, validation_percent=0.2, batch_size=32, img_height=32, img_width=32):
@@ -20,19 +21,7 @@ def load_data(data_path, validation_percent=0.2, batch_size=32, img_height=32, i
     # Re-create path into object-oriented system
     data_dir = pathlib.Path(data_path)
 
-    # Classes defined by directory structure
-    # train_ds = tf.keras.preprocessing.image_dataset_from_directory(
-    #     data_dir,
-    #     validation_split=validation_percent,
-    #     subset="training",
-    #     seed=123,
-    #     shuffle=True,
-    #     label_mode='int',
-    #     labels='inferred',
-    #     image_size=(img_height, img_width),
-    #     batch_size=batch_size)
-
-    generator = tf.keras.preprocessing.image.ImageDataGenerator()
+    generator = tf.keras.preprocessing.image.ImageDataGenerator(validation_split=validation_percent)
 
     column_labeled_images = ["filename", "labels"]
     df_labeled_images = pd.read_csv("image_labels.txt", sep="|", names=column_labeled_images)
@@ -50,17 +39,6 @@ def load_data(data_path, validation_percent=0.2, batch_size=32, img_height=32, i
         data_format=None,
         batch_size=batch_size
     )
-
-    # validation_ds = tf.keras.preprocessing.image_dataset_from_directory(
-    #     data_dir,
-    #     validation_split=validation_percent,
-    #     subset="validation",
-    #     seed=123,
-    #     shuffle=True,
-    #     label_mode='int',
-    #     labels='inferred',
-    #     image_size=(img_height, img_width),
-    #     batch_size=batch_size)
 
     validation_ds = generator.flow_from_dataframe(
         df_labeled_images,
