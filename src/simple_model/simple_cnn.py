@@ -1,9 +1,9 @@
 from os import path
 import matplotlib.pyplot as plt
+import numpy as np
 import tensorflow as tf
 from keras.models import load_model
 from keras.preprocessing.image import img_to_array
-import numpy as np
 # make a prediction for a new image.
 from keras.preprocessing.image import load_img
 from tensorflow.keras import layers, models
@@ -18,12 +18,6 @@ def train_cnn_model(train_set, test_set):
     """
     # Do not show version warnings
     tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
-
-    # Cache data to avoid I/O bottleneck
-    AUTOTUNE = tf.data.experimental.AUTOTUNE
-
-    # train_set = train_set.cache().prefetch(buffer_size=AUTOTUNE)
-    # test_set = test_set.cache().prefetch(buffer_size=AUTOTUNE)
 
     num_classes = len(train_set.class_indices.items())
 
@@ -79,13 +73,13 @@ def train_cnn_model(train_set, test_set):
 
 
 # https://machinelearningmastery.com/how-to-develop-a-cnn-from-scratch-for-cifar-10-photo-classification/
-def load_image(filename):
+def load_image(filename, size=32):
     # load the image
-    img = load_img(filename, target_size=(32, 32))
+    img = load_img(filename, target_size=(size, size))
     # convert to array
     img = img_to_array(img)
     # reshape into a single sample with 3 channels
-    img = img.reshape(1, 32, 32, 3)
+    img = img.reshape(1, size, size, 3)
     # prepare pixel data
     img = img.astype('float32')
     img = img / 255.0

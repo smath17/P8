@@ -16,7 +16,6 @@ for game in games:
   split = split[1].split("]")
   game_tags = split[0]
   if stop == 2: break
-  stop += 1
   print("This game has following tags:")
   print(game_tags)
   game_tags = game_tags.split(",")
@@ -33,7 +32,9 @@ for game in games:
       else:
         #print("yes")
         #print("counter = ", counter)
-        game_list[stop].insert(counter,True)
+        print("game nr",stop, " element nr", counter, "set to true")
+        game_list[stop][counter] = True
         break
-  print(game_list[0])
-  counter = 0
+    counter = 0
+  stop += 1
+  print(game_list[stop])
