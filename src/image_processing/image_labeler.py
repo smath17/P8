@@ -76,9 +76,9 @@ def label_images():
         for filename in filenames:
             app_id = str(filename.split("_")[0])
             if app_labels.get(app_id) is not None:
-                if app_labels.get(app_id) == label_1:
+                if app_labels.get(app_id).strip("[']") == label_1:
                     label_1_count += 1
-                elif app_labels.get(app_id) == label_2:
+                elif app_labels.get(app_id).strip("[']") == label_2:
                     label_2_count += 1
 
         balanced_count = min(label_1_count, label_2_count)
@@ -93,12 +93,12 @@ def label_images():
             if app_labels.get(app_id) is not None:
                 if "," in app_labels.get(app_id):
                     continue
-                if app_labels.get(app_id) == label_1:
+                if app_labels.get(app_id).strip("[']") == label_1:
                     if label_1_count < balanced_count:
                         label_1_count += 1
                     else:
                         continue
-                elif app_labels.get(app_id) == label_2:
+                elif app_labels.get(app_id).strip("[']") == label_2:
                     if label_2_count < balanced_count:
                         label_2_count += 1
                     else:
