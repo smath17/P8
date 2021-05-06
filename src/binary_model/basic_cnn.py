@@ -63,6 +63,10 @@ def train(steps_per_epoch, epoch_count):
                   steps_per_epoch= steps_per_epoch,
                   epochs= epoch_count,
                   validation_data= validation_dataset)
+    elif epoch_count > 0:
+        model.fit(train_dataset,
+                  epochs=epoch_count,
+                  validation_data=validation_dataset)
     else:
         model.fit(train_dataset,
                   validation_data=validation_dataset)
