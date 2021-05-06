@@ -60,13 +60,18 @@ def train(steps_per_epoch, epoch_count):
                                          ])
     #model.compile(loss= 'binary_crossentropy', optimizer= RMSprop(lr=0.001),
     model.compile(optimizer='adam',
-                      loss=tf.keras.losses.BinaryCrossentropy(),
-                      metrics=['accuracy'])
+                  loss=tf.keras.losses.BinaryCrossentropy(),
+                  metrics=['accuracy'])
 
-    model.fit(train_dataset,
-              steps_per_epoch= steps_per_epoch,
-              epochs= epoch_count,
-              validation_data= validation_dataset)
+    # run with or without optional parameters
+    if steps_per_epoch > 0 and epoch_count > 0:
+        model.fit(train_dataset,
+                  steps_per_epoch= steps_per_epoch,
+                  epochs= epoch_count,
+                  validation_data= validation_dataset)
+    else:
+        model.fit(train_dataset,
+                  validation_data=validation_dataset)
 
     model.save("basic.cnn")
 
