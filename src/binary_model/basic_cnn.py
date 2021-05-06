@@ -12,14 +12,12 @@ import os
 def train(steps_per_epoch, epoch_count):
     print("Training binary model...")
 
-    train = ImageDataGenerator(rescale= 1/255)
-    validation =ImageDataGenerator(rescale= 1/255)
+    generator = ImageDataGenerator(rescale= 1/255, validation_split=0.2)
 
     column_labeled_images = ["filename", "labels"]
     df_labeled_images = pd.read_csv("image_labels.txt", sep="|", names=column_labeled_images)
-    #df_labeled_images["labels"] = df_labeled_images["labels"].apply(lambda x: ast.literal_eval(x))
 
-    train_dataset = train.flow_from_dataframe(df_labeled_images,
+    train_dataset = generator.flow_from_dataframe(df_labeled_images,
                                               '../resources/all_images/',
                                               x_col="filename",
                                               y_col="labels",
@@ -29,19 +27,15 @@ def train(steps_per_epoch, epoch_count):
                                               batch_size= 25,
                                               class_mode= 'binary')
 
-    validation_dataset = train.flow_from_dataframe(df_labeled_images,
+    validation_dataset = generator.flow_from_dataframe(df_labeled_images,
                                                    '../resources/all_images/',
                                                    x_col="filename",
                                                    y_col="labels",
                                                    target_size= (200,200),
-                                                   subset="training",
+                                                   subset="validation",
                                                    seed=15,
                                                    batch_size= 25,
                                                    class_mode= 'binary')
-
-    print(train_dataset.class_indices)
-
-    print(train_dataset.classes)
 
     model = tf.keras.models.Sequential([ tf.keras.layers.Conv2D(16,(3,3),activation= 'relu', input_shape= (200,200,3)),
                                          tf.keras.layers.MaxPooling2D(2,2),
@@ -58,7 +52,7 @@ def train(steps_per_epoch, epoch_count):
                                          ##
                                          tf.keras.layers.Dense(1,activation= 'sigmoid')
                                          ])
-    #model.compile(loss= 'binary_crossentropy', optimizer= RMSprop(lr=0.001),
+
     model.compile(optimizer='adam',
                   loss=tf.keras.losses.BinaryCrossentropy(),
                   metrics=['accuracy'])
