@@ -1,8 +1,8 @@
 import pandas as pd
 
-# setup columns based on all_tags.txt
+# setup columns based on tags.txt
 columns = ["appid"]
-with open("../../resources/all_tags.txt") as file:
+with open("../../resources/tags.txt") as file:
     for line in file:
         columns.append(line[:-1])
 
@@ -57,7 +57,7 @@ for row in df_tags.head(df_tags.size).itertuples():
     game += 1
 
 # write csv to file
-file = open("../../resources/tag_stats.csv", "w")
+file = open("../../resources/tags_correspondence.csv", "w")
 
 # first row
 file.write("-,")
