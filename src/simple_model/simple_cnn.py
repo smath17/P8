@@ -44,19 +44,15 @@ def train_cnn_model(train_set, test_set):
     )
     model.compile(optimizer='adam',
                   loss=tf.keras.losses.BinaryCrossentropy(),
-                  metrics=['accuracy'])
+                  metrics=[tf.keras.metrics.Accuracy(),
+                           tf.keras.metrics.AUC(multi_label=True),
+                           tf.keras.metrics.Recall(),
+                           tf.keras.metrics.CategoricalAccuracy(),
+                           tf.keras.metrics.CategoricalCrossentropy()])
 
-    history = model.fit(train_set, epochs=100,
-                        validation_data=test_set, callbacks=[tensorboard_setup()], verbose=2)
-    """
-    plt.plot(history.history['accuracy'], label='accuracy')
-    plt.plot(history.history['val_accuracy'], label='val_accuracy')
-    plt.xlabel('Epoch')
-    plt.ylabel('Accuracy')
-    plt.ylim([0.5, 1])
-    plt.legend(loc='lower right')
-    plt.show()
-    """
+    model.fit(train_set, epochs=100,
+              validation_data=test_set, callbacks=[tensorboard_setup()], verbose=2)
+
     model.save("cnn.model")
 
 
