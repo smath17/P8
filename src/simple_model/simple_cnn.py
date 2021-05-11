@@ -1,5 +1,6 @@
 import datetime
 from os import path
+
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
@@ -41,42 +42,21 @@ def train_cnn_model(train_set, test_set):
         layers.Dense(128, activation='relu'),
         layers.Dense(num_classes, activation="sigmoid"))
     )
-
-    # https://www.tensorflow.org/api_docs/python/tf/keras/metrics
     model.compile(optimizer='adam',
-                  loss=tf.keras.losses.BinaryCrossentropy,
-                  metrics=[tf.keras.metrics.Accuracy(),
-                           tf.keras.metrics.AUC(multi_label=True),
-                           tf.keras.metrics.Recall(),
-                           tf.keras.metrics.CategoricalAccuracy(),
-                           tf.keras.metrics.CategoricalCrossentropy()])
+                  loss=tf.keras.losses.BinaryCrossentropy(),
+                  metrics=['accuracy'])
 
     history = model.fit(train_set, epochs=100,
                         validation_data=test_set, callbacks=[tensorboard_setup()], verbose=2)
-
-    plt.subplot(3, 2, 1)
-    plt.plot(history.history['loss'], label='Loss')
-    plt.plot(history.history['val_loss'], label='Validation loss')
+    """
+    plt.plot(history.history['accuracy'], label='accuracy')
+    plt.plot(history.history['val_accuracy'], label='val_accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.ylim([0.5, 1])
     plt.legend(loc='lower right')
-
-    plt.subplot(3, 2, 2)
-    plt.plot(history.history['auc'], label='AUC')
-    plt.legend(loc='lower right')
-
-    plt.subplot(3, 2, 3)
-    plt.plot(history.history['recall'], label='Recall')
-    plt.legend(loc='lower right')
-
-    plt.subplot(3, 2, 4)
-    plt.plot(history.history['categorical_accuracy'], label='Categorical Accuracy')
-    plt.legend(loc='lower right')
-
-    plt.subplot(3, 2, 5)
-    plt.plot(history.history['categorical_crossentropy'], label='Categorical Crossentropy')
-    plt.legend(loc='lower right')
-
     plt.show()
-
+    """
     model.save("cnn.model")
 
 
