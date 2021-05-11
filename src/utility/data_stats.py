@@ -12,8 +12,9 @@ df_tags = pd.read_csv("../../resources/steamspy_tag_data.csv", usecols=columns)
 tag_amount = len(columns)-1
 game_amount = len(df_tags)
 
-max_games = 100
+max_games = game_amount  # this can be changed for debugging purposes
 
+# set up matrix
 relation_matrix = []
 for y in range(tag_amount):
     inner_list = []
@@ -24,8 +25,8 @@ for y in range(tag_amount):
 game = 0
 # iterate through csv as tuples
 for row in df_tags.head(df_tags.size).itertuples():
-    #if game > max_games:
-    #    break
+    if game > max_games:
+        break
 
     if game % 1000 == 0:
         print(game, "/", game_amount)
@@ -55,30 +56,32 @@ for row in df_tags.head(df_tags.size).itertuples():
         index_h += 1
     game += 1
 
-
+# write csv to file
 file = open("../../resources/tag_stats.csv", "w")
 
+# first row
 file.write("-,")
 col = 0
-while col < tag_amount-1:
+while col < tag_amount:
     file.write(columns[col+1])
-    if col < tag_amount-2:
+    if col < tag_amount-1:
         file.write(",")
     col += 1
 file.write("\n")
 
+# the rest of the rows
 row = 0
-while row < tag_amount-1:
+while row < tag_amount:
     # print(columns[row+1].rjust(25), relation_matrix[row])
-    row += 1
-    file.write(columns[row])
+    file.write(columns[row+1])
     file.write(",")
     col = 0
-    while col < tag_amount-1:
+    while col < tag_amount:
         file.write(str(relation_matrix[row][col]))
-        if col < tag_amount-2:
+        if col < tag_amount-1:
             file.write(",")
         col += 1
     file.write("\n")
+    row += 1
 
 file.close()
