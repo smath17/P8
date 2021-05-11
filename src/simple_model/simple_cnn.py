@@ -43,7 +43,7 @@ def train_cnn_model(train_set, test_set):
         layers.Dense(num_classes, activation="sigmoid"))
     )
     model.compile(optimizer='adam',
-                  loss=tf.keras.losses.BinaryCrossentropy,
+                  loss=tf.keras.losses.BinaryCrossentropy(),
                   metrics=['accuracy'])
 
     history = model.fit(train_set, epochs=100,
