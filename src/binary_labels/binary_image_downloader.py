@@ -2,7 +2,7 @@ import pandas as pd
 import os
 import requests
 index_cap = 20000
-image_amount = 1000
+image_amount = 50
 hit_url_list = []
 non_hit_url_list = []
 label_counter = 0
