@@ -74,8 +74,8 @@ if __name__ == '__main__':
     parser.add_argument("--devices", action="store_true", help="Show available (GPU) devices")
     parser.add_argument("--predict_suatap", action="store_true", help="Predict labels for Suatap model")
     parser.add_argument("--visualize", action="store_true", help="Visualize 9 images and their labels")
-    parser.add_argument("--steps_per_epoch", type=int, help="Amount of steps per training epoch")
-    parser.add_argument("--epoch_count", type=int, help="Amount of epochs during training")
+    parser.add_argument("--steps_per_epoch", type=int, default=0, help="Amount of steps per training epoch")
+    parser.add_argument("--epoch_count", type=int, default=0, help="Amount of epochs during training")
 
     cli_args = parser.parse_args()
 

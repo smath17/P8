@@ -47,7 +47,11 @@ def label_images():
 
     binary = label_count == 2
 
-    app_labels = open("app_labels.txt", "r").readlines()
+    app_labels = {}
+    with open("app_labels.txt") as app_labels_file:
+        for line in app_labels_file:
+            split = line.split("|")
+            app_labels[split[0]] = split[1].strip("\n")
 
     _, _, filenames = next(walk("../resources/all_images"))
 
@@ -72,9 +76,9 @@ def label_images():
         for filename in filenames:
             app_id = str(filename.split("_")[0])
             if app_labels.get(app_id) is not None:
-                if app_labels.get(app_id)[0] == label_1:
+                if app_labels.get(app_id).strip("[']") == label_1:
                     label_1_count += 1
-                elif app_labels.get(app_id)[0] == label_2:
+                elif app_labels.get(app_id).strip("[']") == label_2:
                     label_2_count += 1
 
         balanced_count = min(label_1_count, label_2_count)
@@ -87,18 +91,20 @@ def label_images():
             app_id = str(filename.split("_")[0])
 
             if app_labels.get(app_id) is not None:
-                if app_labels.get(app_id)[0] == label_1:
+                if "," in app_labels.get(app_id):
+                    continue
+                if app_labels.get(app_id).strip("[']") == label_1:
                     if label_1_count < balanced_count:
                         label_1_count += 1
                     else:
                         continue
-                elif app_labels.get(app_id)[0] == label_2:
+                elif app_labels.get(app_id).strip("[']") == label_2:
                     if label_2_count < balanced_count:
                         label_2_count += 1
                     else:
                         continue
 
-                output = filename + "|" + app_labels.get(app_id)[0]
+                output = filename + "|" + app_labels.get(app_id)
                 file.write(output + "\n")
 
         file.close()
