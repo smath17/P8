@@ -51,7 +51,7 @@ def train_cnn_model(train_set, test_set):
                            tf.keras.metrics.TopKCategoricalAccuracy(k=5, name="top 5 accuracy")])
 
     model.fit(train_set, epochs=100,
-              validation_data=test_set, callbacks=[tensorboard_setup()], verbose=2)
+              validation_data=test_set, callbacks=[tensorboard_setup()], verbose=2, workers=8)
 
     model.save("cnn.model")
 

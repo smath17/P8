@@ -60,7 +60,7 @@ def train_model(model: keras.Model, train_ds, val_ds):
                            tf.keras.metrics.TopKCategoricalAccuracy(k=3, name="top 3 accuracy"),
                            tf.keras.metrics.TopKCategoricalAccuracy(k=4, name="top 4 accuracy"),
                            tf.keras.metrics.TopKCategoricalAccuracy(k=5, name="top 5 accuracy")])
-    model.fit(train_ds, epochs=10, validation_data=val_ds, callbacks=[tensorboard_setup()], verbose=2)
+    model.fit(train_ds, epochs=10, validation_data=val_ds, callbacks=[tensorboard_setup()], verbose=2, workers=8)
 
     model.save("logs/fit/suatap/model")
 
