@@ -36,7 +36,29 @@ def class_distribution_in_dataset():
     return genre_list
 
 
+def multiclass_distribution_in_dataset():
+    genres_list = {}
+
+    with open("../image_labels.txt", "r") as file:
+        lines = file.readlines()
+        for line in lines:
+            genres_array = line.split("|")[1]
+            genres = genres_array.replace("'", "")\
+                                 .replace("[", "")\
+                                 .replace(" ", "")\
+                                 .replace("]", "")\
+                                 .replace("\n", "")\
+                                 .split(",")
+
+            if str(genres) not in genres_list:  # Create entry in genre_list
+                genres_list[str(genres)] = 1
+            else:  # Increment genre in genre_list
+                genres_list[str(genres)] += 1
+
+    return genres_list
+
+
 distribution = class_distribution_in_dataset()
-print(distribution)
+# print(distribution)
 for label in distribution:
-    print(label + " - " + str(distribution[label]))
+    print(label + "," + str(distribution[label]))

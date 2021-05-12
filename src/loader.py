@@ -7,10 +7,11 @@ import pandas as pd
 import tensorflow as tf
 
 
-def load_data(data_path, validation_percent=0.2, batch_size=32, img_height=32, img_width=32):
+def load_data(data_path, sampling, validation_percent=0.2, batch_size=32, img_height=32, img_width=32):
     """
     Loads and labels images from a directory. Splits images into training and validation sets.
 
+    :param sampling: Boolean determining whether we should try to resample the data.
     :param img_width: Width of images after resizing
     :param img_height: Height of images after resizing
     :param batch_size: The size of batches of data
@@ -25,6 +26,26 @@ def load_data(data_path, validation_percent=0.2, batch_size=32, img_height=32, i
 
     column_labeled_images = ["filename", "labels"]
     df_labeled_images = pd.read_csv("image_labels.txt", sep="|", names=column_labeled_images)
+
+    if sampling:
+        low_data_list = ["_two_d", "anime", "arcade", "board_game", "building", "bullet_hell",
+                         "card_game", "cartoony", "colorful", "cute", "fighting", "first_person", "hand_drawn",
+                         "horror",
+                         "isometric", "medieval", "minimalist", "music", "ninja", "pixel_graphics", "platformer",
+                         "post_apocalyptic", "puzzle", "rts", "realistic", "sci_fi", "shooter",
+                         "space",
+                         "sports", "survival", "third_person", "top_down", "tower_defense", "vr",
+                         "visual_novel", "war"]
+        high_data_list = ["adventure", "action", "simulation", "strategy", "rpg"]
+
+        print("Attempting to re-sample dataset...")
+        df_labeled_images = oversample_low_data(df_labeled_images, low_data_list, high_data_list)
+
+        print_data_distribution(df_labeled_images, low_data_list, high_data_list)
+
+        print("Done re-sampling the dataset.")
+
+    # Convert string to lists to be used in dataframe
     df_labeled_images["labels"] = df_labeled_images["labels"].apply(lambda x: ast.literal_eval(x))
 
     train_ds = generator.flow_from_dataframe(
@@ -83,3 +104,111 @@ def visualize_data(dataset, img_count):
         plt.axis("off")
 
     plt.show()
+
+
+def print_data_distribution(df_labeled_images, low_data, high_data):
+    print("Genre/Tag, # of screenshots")
+    for genre in low_data:
+        dataframe = df_labeled_images.loc[
+            df_labeled_images["labels"].map(lambda x: genre in x)
+        ]
+        print(genre + ", " + str(len(dataframe)))
+
+    for genre in high_data:
+        dataframe = df_labeled_images.loc[
+            df_labeled_images["labels"].map(lambda x: genre in x)
+        ]
+        print(genre + ", " + str(len(dataframe)))
+
+    print("Length of Dataframe (All labels): " + str(len(df_labeled_images)))
+
+
+def oversample_low_data(df_labeled_images, low_data_list, high_data_list):
+    # print("Before Dataframe (All): " + str(len(df_labeled_images)))
+
+    high_dataframes = []
+    for oversampled in high_data_list:
+        # Dataframe consisting of action labelled images.
+        high_dataframes.append(df_labeled_images.loc[
+                                   df_labeled_images["labels"].map(lambda x: oversampled in x)
+                               ])
+
+    for _ in range(0, 3):
+        for genre in low_data_list:
+            # print("Sampling: " + genre)
+
+            while True:
+                # Dataframe consisting of fighting labelled images.
+                low_dataframe = df_labeled_images.loc[
+                    df_labeled_images["labels"].map(lambda x: genre in x)
+                ]
+
+                # If we reached a good distribution
+                if 20000 <= len(low_dataframe):
+                    """
+                    even = True
+                    
+                    # Check if all high_data dataframes are considered even
+                    for oversampled in high_dataframes:
+                        if len(oversampled) > 50000:
+                            even = False
+                            print("Uneven. Trying to sample again.")
+                            break
+                    if even:
+                    """
+                    # print("DONE")
+                    # print("Dataframe (" + genre + "): " + str(len(low_dataframe)))
+                    # print("Dataframe (All): " + str(len(df_labeled_images)))
+                    break
+
+                # This does not affect image_labels.txt so this is reset every run.
+                # Oversample or undersample label
+                if len(low_dataframe) <= 20000:
+                    low_dataframe = low_dataframe.sample(20000 - len(low_dataframe), replace=True)  # Oversample
+
+                    # Combine sampling with dataset
+                    df_labeled_images = df_labeled_images.append(low_dataframe)
+                else:
+                    low_dataframe = low_dataframe.sample(20000)  # Undersample
+
+                    # Remove previous labelled images
+                    df_labeled_images = df_labeled_images.loc[
+                        df_labeled_images["labels"].map(lambda x: genre in x)
+                    ]
+                    # Add new labelled images
+                    df_labeled_images = df_labeled_images.append(low_dataframe)
+
+                # Resample. This potentially removes some of the low data.
+                # Thus we need to iterate this whole process.
+                df_labeled_images = resample_high_data_labels(df_labeled_images, high_data_list, high_dataframes)
+
+    return df_labeled_images
+
+
+def resample_high_data_labels(df_labeled_images, high_data_list, high_dataframes):
+    counter = 0
+    for high_dataframe in high_dataframes:
+        high_dataframes[counter] = high_dataframe.sample(20000)
+        counter += 1
+
+    # Remove previous action labelled images
+    df_labeled_images = df_labeled_images.loc[
+        df_labeled_images["labels"].map(lambda x: high_data_list[0] not in x and
+                                                  high_data_list[1] not in x and
+                                                  high_data_list[2] not in x and
+                                                  high_data_list[3] not in x and
+                                                  high_data_list[4] not in x)
+    ]
+
+    # Add new resampled action labelled images
+    for high_dataframe in high_dataframes:
+        df_labeled_images = df_labeled_images.append(high_dataframe)
+
+    return df_labeled_images
+
+
+def print_length_of_frame(df_labeled_images, genre):
+    low_dataframe = df_labeled_images.loc[
+        df_labeled_images["labels"].map(lambda x: genre in x)
+    ]
+    print(genre + ": " + str(len(low_dataframe)))
