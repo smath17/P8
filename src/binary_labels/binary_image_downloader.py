@@ -2,15 +2,16 @@ import pandas as pd
 import os
 import requests
 index_cap = 20000
-image_amount = 50
+image_amount = 500
 hit_url_list = []
 non_hit_url_list = []
 label_counter = 0
 non_hit_label_counter = 0
 tags = open("selected_tags.txt", "r")
 selected_labels = []
-df_files_to_download = pd.read_csv("../files_to_download.txt", sep='|')
+df_files_to_download = pd.read_csv("../all_files_to_download.txt", sep='|')
 df_app_labels = pd.read_csv("app_labels.txt", sep='|')
+df_app_non_labels = pd.read_csv("app_non-labels.txt", sep='|')
 for index in tags:
     selected_labels.append(index.strip())
 
@@ -21,7 +22,7 @@ for label in selected_labels:
     index = 0
     label_path = "../../resources/binary_training_data/train_" + label + "/" + label
     non_label_path = "../../resources/binary_training_data/train_" + label + "/" + "non-" + label
-    print(label_path)
+    print("-------------------------------------------------")
     if not os.path.exists(label_path):
         os.makedirs(label_path)
     else:
@@ -52,7 +53,7 @@ for label in selected_labels:
                                 while df_files_to_download.loc[index][0] == app_label[0] and len(
                                         df_files_to_download) - 1 > index:
                                     if labelled_images_found % 100 == 0 and labelled_images_found > 0:
-                                        print("Found ", labelled_images_found, "labelled images")
+                                        print("Found", labelled_images_found, "labelled images")
                                     if labelled_images_found == image_amount:
                                         found_all = True
                                         break
@@ -69,8 +70,6 @@ for label in selected_labels:
     num = 0
     if len(os.listdir(label_path)) == 0:
         for url in hit_url_list[label_counter]:
-            if num % 100 == 0 and num > 0:
-                print("downloaded {}/{} so far".format(num, labelled_images_found))
             link = url.split("|")[0]
             app_id = url.split("|")[1]
             file = open(label_path + "/" + label + app_id + "_" + str(num) + ".jpg", "wb")
@@ -78,6 +77,8 @@ for label in selected_labels:
             file.write(response.content)
             file.close()
             num += 1
+            if num % 100 == 0 and num > 0:
+                print("Downloaded {}/{} so far".format(num, labelled_images_found))
     else:
         print("Directory is not empty")
 
@@ -88,7 +89,7 @@ for label in selected_labels:
     skip = False
     urls = []
     print("Searching for images with label:", "non-" + label)
-    for i, app_label in df_app_labels.iterrows():
+    for i, app_label in df_app_non_labels.iterrows():
         skip = False
         if i > index_cap or found_all:
             break
@@ -109,7 +110,7 @@ for label in selected_labels:
                             while df_files_to_download.loc[index][0] == app_label[0] and len(
                                     df_files_to_download) - 1 > index:
                                 if non_labelled_images_found % 100 == 0 and non_labelled_images_found > 0:
-                                    print("Found ", non_labelled_images_found, "labelled images")
+                                    print("Found", non_labelled_images_found, "labelled images")
                                 if non_labelled_images_found == labelled_images_found:
                                     found_all = True
                                     break
@@ -126,8 +127,6 @@ for label in selected_labels:
     num = 0
     if len(os.listdir(non_label_path)) == 0:
         for url in non_hit_url_list[label_counter]:
-            if num % 100 == 0 and num > 0:
-                print("downloaded {}/{} so far".format(num, labelled_images_found))
             link = url.split("|")[0]
             app_id = url.split("|")[1]
             file = open(non_label_path + "/" + "non-" + label + app_id + "_" + str(num) + ".jpg", "wb")
@@ -135,6 +134,8 @@ for label in selected_labels:
             file.write(response.content)
             file.close()
             num += 1
+            if num % 100 == 0 and num > 0:
+                print("Downloaded {}/{} so far".format(num, labelled_images_found))
     else:
         print("Directory is not empty")
     label_counter += 1
