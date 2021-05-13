@@ -1,3 +1,4 @@
+from image_processing.image_labeler import label_images_with_rest
 from simple_model.simple_cnn import train_cnn_model, predict_sample_image
 from loader import load_data, visualize_data
 from datetime import timedelta
@@ -26,9 +27,9 @@ def label_images():
     stop_timer(time_before, "Time spent on labeling images")
 
 
-def load_data_from_directory(directory, sampling):
+def load_data_from_directory(directory, sampling, rest_label):
     time_before = time.time()
-    train_dataset, test_dataset = load_data(directory, sampling)
+    train_dataset, test_dataset = load_data(directory, sampling, rest_label)
     stop_timer(time_before, "Spent on loading images")
     return train_dataset, test_dataset
 
@@ -63,6 +64,7 @@ if __name__ == '__main__':
     # -h for help
     parser = argparse.ArgumentParser()
     parser.add_argument("-dl", "--download", action="store_true", help="Download and label dataset")
+    parser.add_argument("--rest_label", action="store_true", help="Use 5 largest classes and 1 class for the rest.")
     parser.add_argument("--skip_data", action="store_true", help="Skip loading dataset")
     parser.add_argument("--sample", action="store_true", help="Attempt to sample the dataset")
     parser.add_argument("-simple", "--simple_cnn", action="store_true", help="Train simple_cnn model")
@@ -80,11 +82,14 @@ if __name__ == '__main__':
         download_images()
 
         # Label images
-        label_images()
+        if cli_args.rest_label:
+            label_images_with_rest()
+        else:
+            label_images()
 
     # Load data
     if not cli_args.skip_data:
-        train_ds, test_ds = load_data_from_directory("../resources/all_images", cli_args.sample)
+        train_ds, test_ds = load_data_from_directory("../resources/all_images", cli_args.sample, cli_args.rest_label)
 
     # Visualize 9 images from the training set
     if cli_args.visualize and not cli_args.skip_data:

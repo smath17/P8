@@ -5,12 +5,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+import math
 
 
-def load_data(data_path, sampling, validation_percent=0.2, batch_size=32, img_height=32, img_width=32):
+def load_data(data_path, sampling, rest_label, validation_percent=0.2, batch_size=32, img_height=252, img_width=252):
     """
     Loads and labels images from a directory. Splits images into training and validation sets.
 
+    :param rest_label: Boolean determining whether we use 5+1 labelling.
     :param sampling: Boolean determining whether we should try to resample the data.
     :param img_width: Width of images after resizing
     :param img_height: Height of images after resizing
@@ -25,9 +27,13 @@ def load_data(data_path, sampling, validation_percent=0.2, batch_size=32, img_he
     generator = tf.keras.preprocessing.image.ImageDataGenerator(validation_split=validation_percent)
 
     column_labeled_images = ["filename", "labels"]
-    df_labeled_images = pd.read_csv("image_labels.txt", sep="|", names=column_labeled_images)
+    if rest_label:
+        df_labeled_images = pd.read_csv("image_labels_2.txt", sep="|", names=column_labeled_images)
+    else:
+        df_labeled_images = pd.read_csv("image_labels.txt", sep="|", names=column_labeled_images)
 
     if sampling:
+        high_data_list = ["adventure", "action", "simulation", "strategy", "rpg"]
         low_data_list = ["_two_d", "anime", "arcade", "board_game", "building", "bullet_hell",
                          "card_game", "cartoony", "colorful", "cute", "fighting", "first_person", "hand_drawn",
                          "horror",
@@ -36,12 +42,15 @@ def load_data(data_path, sampling, validation_percent=0.2, batch_size=32, img_he
                          "space",
                          "sports", "survival", "third_person", "top_down", "tower_defense", "vr",
                          "visual_novel", "war"]
-        high_data_list = ["adventure", "action", "simulation", "strategy", "rpg"]
 
         print("Attempting to re-sample dataset...")
-        df_labeled_images = oversample_low_data(df_labeled_images, low_data_list, high_data_list)
 
-        print_data_distribution(df_labeled_images, low_data_list, high_data_list)
+        if rest_label:
+            df_labeled_images = undersample_rest_label(df_labeled_images, high_data_list)
+        else:
+            df_labeled_images = oversample_low_data(df_labeled_images, low_data_list, high_data_list)
+
+        print_data_distribution(df_labeled_images, low_data_list, high_data_list, rest_label)
 
         print("Done re-sampling the dataset.")
 
@@ -106,13 +115,20 @@ def visualize_data(dataset, img_count):
     plt.show()
 
 
-def print_data_distribution(df_labeled_images, low_data, high_data):
+def print_data_distribution(df_labeled_images, low_data, high_data, rest_label):
     print("Genre/Tag, # of screenshots")
-    for genre in low_data:
+
+    if rest_label:
         dataframe = df_labeled_images.loc[
-            df_labeled_images["labels"].map(lambda x: genre in x)
+            df_labeled_images["labels"].map(lambda x: "rest" in x)
         ]
-        print(genre + ", " + str(len(dataframe)))
+        print("rest" + ", " + str(len(dataframe)))
+    else:
+        for genre in low_data:
+            dataframe = df_labeled_images.loc[
+                df_labeled_images["labels"].map(lambda x: genre in x)
+            ]
+            print(genre + ", " + str(len(dataframe)))
 
     for genre in high_data:
         dataframe = df_labeled_images.loc[
@@ -212,3 +228,27 @@ def print_length_of_frame(df_labeled_images, genre):
         df_labeled_images["labels"].map(lambda x: genre in x)
     ]
     print(genre + ": " + str(len(low_dataframe)))
+
+
+def undersample_rest_label(df_labeled_images, high_data_list):
+    high_dataframes_size = 0
+    for oversampled in high_data_list:
+        # Dataframe consisting of high_data labelled images.
+        high_dataframes_size += len(df_labeled_images.loc[
+                                   df_labeled_images["labels"].map(lambda x: oversampled in x)
+                               ])
+
+    average_dataframe_size = math.ceil(high_dataframes_size / len(high_data_list))
+    rest_dataframe = df_labeled_images.loc[
+        df_labeled_images["labels"].map(lambda x: "rest" in x)
+    ]
+    rest_dataframe.sample(average_dataframe_size)
+
+    # Remove previous labelled images
+    df_labeled_images = df_labeled_images.loc[
+        df_labeled_images["labels"].map(lambda x: "rest" in x)
+    ]
+    # Add new labelled images
+    df_labeled_images = df_labeled_images.append(rest_dataframe)
+
+    return df_labeled_images
