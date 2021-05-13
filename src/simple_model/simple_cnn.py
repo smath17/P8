@@ -26,32 +26,30 @@ def train_cnn_model(train_set, test_set):
     dropout_rate = 0.5
 
     model = models.Sequential(layers=(
-        layers.experimental.preprocessing.Rescaling(1. / 255),
-        layers.Conv2D(32, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform),
+        layers.experimental.preprocessing.Rescaling(scale=1./127.5, offset=-1), # Scale to [-1, 1]
+        layers.Conv2D(32, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform()),
         layers.Dropout(dropout_rate),
         layers.MaxPooling2D(),
-        layers.Conv2D(64, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform),
+        layers.Conv2D(64, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform()),
         layers.Dropout(dropout_rate),
         layers.MaxPooling2D(),
-        layers.Conv2D(128, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform),
+        layers.Conv2D(128, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform()),
         layers.Dropout(dropout_rate),
         layers.MaxPooling2D(),
         layers.Flatten(),
-        layers.Dense(128, activation='relu', kernel_initializer=keras.initializers.HeUniform),
+        layers.Dense(128, activation='relu', kernel_initializer=keras.initializers.HeUniform()),
         layers.Dense(num_classes, activation="softmax"))
     )
-    model.compile(optimizer='adam',
-                  loss=tf.keras.losses.CategoricalCrossentropy(),
+
+    # Experimental lr = 1e-6
+    model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.0001),
+                  loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
                   metrics=[tf.keras.metrics.Accuracy(),
                            tf.keras.metrics.AUC(multi_label=True),
-                           tf.keras.metrics.Recall(),
-                           tf.keras.metrics.TopKCategoricalAccuracy(k=2, name="top 2 accuracy"),
-                           tf.keras.metrics.TopKCategoricalAccuracy(k=3, name="top 3 accuracy"),
-                           tf.keras.metrics.TopKCategoricalAccuracy(k=4, name="top 4 accuracy"),
-                           tf.keras.metrics.TopKCategoricalAccuracy(k=5, name="top 5 accuracy")])
+                           tf.keras.metrics.Recall()])
 
     model.fit(train_set, epochs=100,
-              validation_data=test_set, callbacks=[tensorboard_setup()], verbose=2, workers=8)
+              validation_data=test_set, callbacks=[tensorboard_setup()], verbose=2, workers=8, steps_per_epoch=500)
 
     model.save("cnn.model")
 
