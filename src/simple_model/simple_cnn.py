@@ -26,7 +26,7 @@ def train_cnn_model(train_set, test_set):
     dropout_rate = 0.5
 
     model = models.Sequential(layers=(
-        layers.experimental.preprocessing.Rescaling(scale=1./127.5, offset=-1), # Scale to [-1, 1]
+        layers.experimental.preprocessing.Rescaling(scale=1. / 127.5, offset=-1),  # Scale to [-1, 1]
         layers.Conv2D(32, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform()),
         layers.Dropout(dropout_rate),
         layers.MaxPooling2D(),
@@ -49,7 +49,7 @@ def train_cnn_model(train_set, test_set):
                            tf.keras.metrics.Recall()])
 
     model.fit(train_set, epochs=100,
-              validation_data=test_set, callbacks=[tensorboard_setup()], verbose=2, workers=8, steps_per_epoch=500)
+              validation_data=test_set, callbacks=[tensorboard_setup()], verbose=2, workers=8)
 
     model.save("cnn.model")
 
