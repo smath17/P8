@@ -67,7 +67,6 @@ if __name__ == '__main__':
     parser.add_argument("-gather", "--gather_urls", action="store_true", help="Prepare dataset for downloading images")
     parser.add_argument("-dl", "--download", action="store_true", help="Download dataset")
     parser.add_argument("-label", action="store_true", help="Label dataset")
-    parser.add_argument("-dl", "--download", action="store_true", help="Download and label dataset")
     parser.add_argument("--rest_label", action="store_true", help="Use 5 largest classes and 1 class for the rest.")
     parser.add_argument("--skip_data", action="store_true", help="Skip loading dataset")
     parser.add_argument("--sample", action="store_true", help="Attempt to sample the dataset")
@@ -100,7 +99,6 @@ if __name__ == '__main__':
             label_images_with_rest()
         else:
             label_images()
-
 
     # Load data
     if not cli_args.skip_data:

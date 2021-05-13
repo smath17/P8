@@ -5,15 +5,15 @@ from os import walk
 def label_apps():
     # setup columns based on tags.txt
     columns = ["appid"]
-    with open("../../resources/tags.txt") as file:
+    with open("../resources/tags.txt") as file:
         for line in file:
             columns.append(line[:-1])
 
     # read from steamspy_tag_data.csv using previous columns
-    df_tags = pd.read_csv("../../resources/steamspy_tag_data.csv", usecols=columns)
+    df_tags = pd.read_csv("../resources/steamspy_tag_data.csv", usecols=columns)
 
     # write appid + tags to app_labels.txt
-    file = open("../app_labels.txt", "w")
+    file = open("app_labels.txt", "w")
 
     app_labels = {}
 
@@ -54,9 +54,8 @@ def label_images():
             app_labels[split[0]] = split[1].strip("\n")
 
     _, _, filenames = next(walk("../resources/all_images"))
-    _, _, filenames = next(walk("../../resources/all_images"))
 
-    file = open("../image_labels.txt", "w")
+    file = open("image_labels.txt", "w")
 
     # multi labeling
     if not binary:
@@ -117,7 +116,7 @@ def label_images_with_rest():
 
     # setup columns based on tags.txt
     columns = ["appid"]
-    with open("../../resources/tags.txt") as file:
+    with open("../resources/tags.txt") as file:
         for line in file:
             columns.append(line[:-1])
             label_count += 1
@@ -125,10 +124,10 @@ def label_images_with_rest():
     binary = label_count == 2
 
     # read from steamspy_tag_data.csv using previous columns
-    df_tags = pd.read_csv("../../resources/steamspy_tag_data.csv", usecols=columns)
+    df_tags = pd.read_csv("../resources/steamspy_tag_data.csv", usecols=columns)
 
     # write appid + tags to app_labels.txt
-    file = open("../app_labels_2.txt", "w")
+    file = open("app_labels_2.txt", "w")
 
     app_labels = {}
     high_data_list = ["adventure", "action", "simulation", "strategy", "rpg"]
@@ -154,9 +153,9 @@ def label_images_with_rest():
             file.write(output + "\n")
     file.close()
 
-    _, _, filenames = next(walk("../../resources/all_images"))
+    _, _, filenames = next(walk("../resources/all_images"))
 
-    file = open("../image_labels_2.txt", "w")
+    file = open("image_labels_2.txt", "w")
 
     # multi labeling
     if not binary:
