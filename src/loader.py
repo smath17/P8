@@ -32,27 +32,25 @@ def load_data(data_path, sampling, rest_label, validation_percent=0.2, batch_siz
     else:
         df_labeled_images = pd.read_csv("image_labels.txt", sep="|", names=column_labeled_images)
 
+    high_data_list = ["adventure", "action", "simulation", "strategy", "rpg"]
+    low_data_list = ["_two_d", "anime", "arcade", "board_game", "building", "bullet_hell",
+                     "card_game", "cartoony", "colorful", "cute", "fighting", "first_person", "hand_drawn",
+                     "horror",
+                     "isometric", "medieval", "minimalist", "music", "ninja", "pixel_graphics", "platformer",
+                     "post_apocalyptic", "puzzle", "rts", "realistic", "sci_fi", "shooter",
+                     "space",
+                     "sports", "survival", "third_person", "top_down", "tower_defense", "vr",
+                     "visual_novel", "war"]
+
     if sampling:
-        high_data_list = ["adventure", "action", "simulation", "strategy", "rpg"]
-        low_data_list = ["_two_d", "anime", "arcade", "board_game", "building", "bullet_hell",
-                         "card_game", "cartoony", "colorful", "cute", "fighting", "first_person", "hand_drawn",
-                         "horror",
-                         "isometric", "medieval", "minimalist", "music", "ninja", "pixel_graphics", "platformer",
-                         "post_apocalyptic", "puzzle", "rts", "realistic", "sci_fi", "shooter",
-                         "space",
-                         "sports", "survival", "third_person", "top_down", "tower_defense", "vr",
-                         "visual_novel", "war"]
-
-        print("Attempting to re-sample dataset...")
-
+        print("Attempting to resample dataset...")
         if rest_label:
             df_labeled_images = undersample_rest_label(df_labeled_images, high_data_list)
         else:
             df_labeled_images = oversample_low_data(df_labeled_images, low_data_list, high_data_list)
+        print("Done resampling the dataset.")
 
-        print_data_distribution(df_labeled_images, low_data_list, high_data_list, rest_label)
-
-        print("Done re-sampling the dataset.")
+    print_data_distribution(df_labeled_images, low_data_list, high_data_list, rest_label)
 
     # Convert string to lists to be used in dataframe
     df_labeled_images["labels"] = df_labeled_images["labels"].apply(lambda x: ast.literal_eval(x))
@@ -189,7 +187,7 @@ def oversample_low_data(df_labeled_images, low_data_list, high_data_list):
 
                     # Remove previous labelled images
                     df_labeled_images = df_labeled_images.loc[
-                        df_labeled_images["labels"].map(lambda x: genre in x)
+                        df_labeled_images["labels"].map(lambda x: genre not in x)
                     ]
                     # Add new labelled images
                     df_labeled_images = df_labeled_images.append(low_dataframe)
@@ -242,11 +240,11 @@ def undersample_rest_label(df_labeled_images, high_data_list):
     rest_dataframe = df_labeled_images.loc[
         df_labeled_images["labels"].map(lambda x: "rest" in x)
     ]
-    rest_dataframe.sample(average_dataframe_size)
+    rest_dataframe = rest_dataframe.sample(average_dataframe_size)
 
     # Remove previous labelled images
     df_labeled_images = df_labeled_images.loc[
-        df_labeled_images["labels"].map(lambda x: "rest" in x)
+        df_labeled_images["labels"].map(lambda x: "rest" not in x)
     ]
     # Add new labelled images
     df_labeled_images = df_labeled_images.append(rest_dataframe)
