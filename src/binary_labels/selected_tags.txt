@@ -1,0 +1,6 @@
+_two_d
+anime
+puzzle
+rpg
+simulation
+strategy

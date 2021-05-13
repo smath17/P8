@@ -1,6 +1,7 @@
 import datetime
 from os import path
 
+import keras.initializers
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
@@ -22,36 +23,35 @@ def train_cnn_model(train_set, test_set):
     tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
     num_classes = len(train_set.class_indices.items())
-    dropout_rate = 0.2
+    dropout_rate = 0.5
 
     model = models.Sequential(layers=(
         layers.experimental.preprocessing.Rescaling(1. / 255),
-        layers.Conv2D(32, 3, activation='relu'),
-        layers.BatchNormalization(),
+        layers.Conv2D(32, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform),
         layers.Dropout(dropout_rate),
         layers.MaxPooling2D(),
-        layers.Conv2D(32, 3, activation='relu'),
-        layers.BatchNormalization(),
+        layers.Conv2D(64, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform),
         layers.Dropout(dropout_rate),
         layers.MaxPooling2D(),
-        layers.Conv2D(32, 3, activation='relu'),
-        layers.BatchNormalization(),
+        layers.Conv2D(128, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform),
         layers.Dropout(dropout_rate),
         layers.MaxPooling2D(),
         layers.Flatten(),
-        layers.Dense(128, activation='relu'),
-        layers.Dense(num_classes, activation="sigmoid"))
+        layers.Dense(128, activation='relu', kernel_initializer=keras.initializers.HeUniform),
+        layers.Dense(num_classes, activation="softmax"))
     )
     model.compile(optimizer='adam',
-                  loss=tf.keras.losses.BinaryCrossentropy(),
+                  loss=tf.keras.losses.CategoricalCrossentropy(),
                   metrics=[tf.keras.metrics.Accuracy(),
                            tf.keras.metrics.AUC(multi_label=True),
                            tf.keras.metrics.Recall(),
-                           tf.keras.metrics.CategoricalAccuracy(),
-                           tf.keras.metrics.CategoricalCrossentropy()])
+                           tf.keras.metrics.TopKCategoricalAccuracy(k=2, name="top 2 accuracy"),
+                           tf.keras.metrics.TopKCategoricalAccuracy(k=3, name="top 3 accuracy"),
+                           tf.keras.metrics.TopKCategoricalAccuracy(k=4, name="top 4 accuracy"),
+                           tf.keras.metrics.TopKCategoricalAccuracy(k=5, name="top 5 accuracy")])
 
     model.fit(train_set, epochs=100,
-              validation_data=test_set, callbacks=[tensorboard_setup()], verbose=2)
+              validation_data=test_set, callbacks=[tensorboard_setup()], verbose=2, workers=8)
 
     model.save("cnn.model")
 

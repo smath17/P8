@@ -5,13 +5,14 @@ from datetime import timedelta
 from image_processing import image_downloader, image_labeler
 from suatap_paper import suatap_model
 from tensorflow.python.client import device_lib
+from binary_model.basic_cnn import train, predict
 import time
 import argparse
 
 
 def gather_images():
     time_before = time.time()
-    image_downloader.download_images()
+    image_downloader.gather_images()
     stop_timer(time_before, "Time spent on gathering URL links: ")
 
 
@@ -63,29 +64,43 @@ if __name__ == '__main__':
     # Initialize CLI arguments
     # -h for help
     parser = argparse.ArgumentParser()
+    parser.add_argument("-gather", "--gather_urls", action="store_true", help="Prepare dataset for downloading images")
+    parser.add_argument("-dl", "--download", action="store_true", help="Download dataset")
+    parser.add_argument("-label", action="store_true", help="Label dataset")
     parser.add_argument("-dl", "--download", action="store_true", help="Download and label dataset")
     parser.add_argument("--rest_label", action="store_true", help="Use 5 largest classes and 1 class for the rest.")
     parser.add_argument("--skip_data", action="store_true", help="Skip loading dataset")
     parser.add_argument("--sample", action="store_true", help="Attempt to sample the dataset")
     parser.add_argument("-simple", "--simple_cnn", action="store_true", help="Train simple_cnn model")
+    parser.add_argument("-binary", "--binary_cnn", action="store_true", help="Train binary model")
     parser.add_argument("--predict_simple", action="store_true", help="Predict labels for simple_cnn model")
+    parser.add_argument("--predict_binary", action="store_true", help="Predict labels for binary model")
     parser.add_argument("--suatap", action="store_true", help="Train Suatap model")
     parser.add_argument("--devices", action="store_true", help="Show available (GPU) devices")
     parser.add_argument("--predict_suatap", action="store_true", help="Predict labels for Suatap model")
     parser.add_argument("--visualize", action="store_true", help="Visualize 9 images and their labels")
+    parser.add_argument("--steps_per_epoch", type=int, default=0, help="Amount of steps per training epoch")
+    parser.add_argument("--epoch_count", type=int, default=0, help="Amount of epochs during training")
 
     cli_args = parser.parse_args()
 
-    # Gather and Download images
-    if cli_args.download:
+    # Gather image URLs
+    if cli_args.gather_urls:
+        image_labeler.label_apps()
         gather_images()
+
+    # Download images
+    if cli_args.download:
         download_images()
 
+    # Label images
+    if cli_args.label:
         # Label images
         if cli_args.rest_label:
             label_images_with_rest()
         else:
             label_images()
+
 
     # Load data
     if not cli_args.skip_data:
@@ -109,6 +124,14 @@ if __name__ == '__main__':
     # Train model from Suatap paper
     if cli_args.suatap:
         train_suatap_model(train_ds, test_ds)
+
+    # Train binary model
+    if cli_args.binary_cnn:
+        train(cli_args.steps_per_epoch, cli_args.epoch_count)
+
+    # Predict label using binary model
+    if cli_args.predict_binary:
+        predict()
 
     # List available devices (CPU/GPU)
     if cli_args.devices:

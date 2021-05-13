@@ -5,32 +5,49 @@ import requests
 from PIL import Image
 
 
-def download_images():
+def gather_images():
     column_names_media = ["steam_appid", "header_image", "screenshots", "background", "movies"]
 
     df_media = pd.read_csv("../resources/steam_media_data.csv", names=column_names_media)
 
+    app_ids = []
+    file = open("app_labels.txt", "r")
+    for line in file:
+        app_ids.append(line.split("|")[0])
+
     if not os.path.exists("../resources/all_images"):
         os.mkdir("../resources/all_images")
 
+    last_index = 0
+    output_lines = []
     # Loop through every game in steam_media_data.csv
+    print("Gathering URLs...")
     for index_media, row_media in df_media.head(df_media.size).iterrows():
         # access data using column names
         if index_media == 0:
             continue
 
-        # Convert screenshot column to a JSON string
-        json_string = "[" + row_media['screenshots'][1:-2].replace("\'", "\"") + "}]"
-        screenshots = json.loads(json_string)
-
-        # Write URLs to a file to download later.
-        # Thus we do not need to move the file later and we can start from that file instead.
-        # TODO This file is appended to every time. Not intended.
-        #  Should look if the line is already in there and append if not. Not important right now.
-        with open("files_to_download.txt", "a") as file:
-            for screenshot in screenshots:
-                file.write(str(row_media["steam_appid"]) + "|"
-                           + screenshot["path_thumbnail"] + "\n")
+        # Check if app_id is in app_label.txt
+        x = last_index
+        while x < len(app_ids):
+            if app_ids[x] == str(row_media["steam_appid"]):
+                last_index = x+1
+                if x % 1000 == 0 and x > 0:
+                    print("found {}/{} so far".format(x,len(app_ids)))
+                # Convert screenshot column to a JSON string
+                json_string = "[" + row_media['screenshots'][1:-2].replace("\'", "\"") + "}]"
+                screenshots = json.loads(json_string)
+                # Write URLs to output_lines
+                for screenshot in screenshots:
+                    output_lines.append(str(row_media["steam_appid"]) + "|"
+                            + screenshot["path_thumbnail"])
+                break
+            x += 1
+    # write output_lines to files_to_download
+    file = open("files_to_download.txt", "w")
+    for line in output_lines:
+        file.write(line + "\n")
+    file.close()
 
 
 def download_images_from_file(debug=False):
