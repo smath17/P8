@@ -59,6 +59,6 @@ def multiclass_distribution_in_dataset():
 
 
 distribution = class_distribution_in_dataset()
-# print(distribution)
+print("Genre/Tag, # of screenshots")
 for label in distribution:
-    print(label + "," + str(distribution[label]))
+    print(label + ", " + str(distribution[label]))

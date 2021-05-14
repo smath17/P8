@@ -32,15 +32,15 @@ def load_data(data_path, sampling, rest_label, validation_percent=0.2, batch_siz
     else:
         df_labeled_images = pd.read_csv("image_labels.txt", sep="|", names=column_labeled_images)
 
-    high_data_list = ["adventure", "action", "simulation", "strategy", "rpg"]
-    low_data_list = ["_two_d", "anime", "arcade", "board_game", "building", "bullet_hell",
-                     "card_game", "cartoony", "colorful", "cute", "fighting", "first_person", "hand_drawn",
-                     "horror",
-                     "isometric", "medieval", "minimalist", "music", "ninja", "pixel_graphics", "platformer",
-                     "post_apocalyptic", "puzzle", "rts", "realistic", "sci_fi", "shooter",
-                     "space",
-                     "sports", "survival", "third_person", "top_down", "tower_defense", "vr",
-                     "visual_novel", "war"]
+    # Labels with > 50.000 entries
+    high_data_list = ["casual", "indie", "adventure", "action", "strategy"]
+    low_data_list = []
+
+    with open("../resources/tags.txt") as file:
+        for line in file:
+            genre = line.strip("\n")
+            if genre not in low_data_list and genre not in high_data_list:
+                low_data_list.append(genre)
 
     if sampling:
         print("Attempting to resample dataset...")
@@ -138,7 +138,7 @@ def print_data_distribution(df_labeled_images, low_data, high_data, rest_label):
 
 
 def oversample_low_data(df_labeled_images, low_data_list, high_data_list):
-    # print("Before Dataframe (All): " + str(len(df_labeled_images)))
+    print("Before Dataframe (All): " + str(len(df_labeled_images)))
 
     high_dataframes = []
     for oversampled in high_data_list:
@@ -150,7 +150,7 @@ def oversample_low_data(df_labeled_images, low_data_list, high_data_list):
     for _ in range(0, 3):
         for genre in low_data_list:
             # print("Sampling: " + genre)
-
+            counter = 0
             while True:
                 # Dataframe consisting of fighting labelled images.
                 low_dataframe = df_labeled_images.loc[
@@ -192,9 +192,17 @@ def oversample_low_data(df_labeled_images, low_data_list, high_data_list):
                     # Add new labelled images
                     df_labeled_images = df_labeled_images.append(low_dataframe)
 
+                # Break early as some classes cannot be resampled
+                # due to them being so closely related to any of the high data classes.
+                # Whenever we remove the high data class samples, the new added low data samples are removed also.
+                if counter > 30:
+                    break
+
                 # Resample. This potentially removes some of the low data.
                 # Thus we need to iterate this whole process.
                 df_labeled_images = resample_high_data_labels(df_labeled_images, high_data_list, high_dataframes)
+
+                counter += 1
 
     return df_labeled_images
 

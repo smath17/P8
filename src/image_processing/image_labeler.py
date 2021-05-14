@@ -130,7 +130,9 @@ def label_images_with_rest():
     file = open("app_labels_2.txt", "w")
 
     app_labels = {}
-    high_data_list = ["adventure", "action", "simulation", "strategy", "rpg"]
+
+    # Labels with > 50.000 entries
+    high_data_list = ["casual", "indie", "adventure", "action", "strategy"]
 
     # iterate through csv as tuples
     for row in df_tags.head(df_tags.size).itertuples():
