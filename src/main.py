@@ -1,13 +1,15 @@
-from image_processing.image_labeler import label_images_with_rest
-from simple_model.simple_cnn import train_cnn_model, predict_sample_image
-from loader import load_data, visualize_data
-from datetime import timedelta
-from image_processing import image_downloader, image_labeler
-from suatap_paper import suatap_model
-from tensorflow.python.client import device_lib
-from binary_model.basic_cnn import train, predict
-import time
 import argparse
+import time
+from datetime import timedelta
+
+from tensorflow.python.client import device_lib
+
+from binary_model.basic_cnn import train, predict
+from image_processing import image_downloader, image_labeler
+from image_processing.image_labeler import label_images_with_rest
+from loader import load_data, visualize_data, load_test_data
+from simple_model.simple_cnn import train_cnn_model, predict_sample_image, simple_evaluate
+from suatap_paper import suatap_model
 
 
 def gather_images():
@@ -30,9 +32,15 @@ def label_images():
 
 def load_data_from_directory(directory, sampling, rest_label):
     time_before = time.time()
-    train_dataset, test_dataset = load_data(directory, sampling, rest_label)
+    train_dataset, validation_dataset = load_data(directory, sampling, rest_label)
     stop_timer(time_before, "Spent on loading images")
-    return train_dataset, test_dataset
+    return train_dataset, validation_dataset
+
+
+def evaluate_simple_cnn(directory, sampling, rest_label):
+    # Make sure images have same size as when trained
+    test_data = load_test_data(directory, sampling, rest_label, img_width=32, img_height=32)
+    simple_evaluate(test_data)
 
 
 def train_model(train_set, test_set):
@@ -80,6 +88,7 @@ if __name__ == '__main__':
     parser.add_argument("--visualize", action="store_true", help="Visualize 9 images and their labels")
     parser.add_argument("--steps_per_epoch", type=int, default=0, help="Amount of steps per training epoch")
     parser.add_argument("--epoch_count", type=int, default=0, help="Amount of epochs during training")
+    parser.add_argument("--evaluate_simple", action="store_true")
 
     cli_args = parser.parse_args()
 
@@ -138,3 +147,6 @@ if __name__ == '__main__':
     # Predict from Suatap
     if cli_args.predict_suatap:
         suatap_model.inference_mode("")
+
+    if cli_args.evaluate_simple:
+        evaluate_simple_cnn("../resources/all_images", cli_args.sample, cli_args.rest_label)

@@ -5,6 +5,8 @@ import keras.initializers
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+import visualkeras
+from PIL import ImageFont
 from keras.models import load_model
 from keras.preprocessing.image import img_to_array
 # make a prediction for a new image.
@@ -48,10 +50,23 @@ def train_cnn_model(train_set, test_set):
                            tf.keras.metrics.AUC(multi_label=True),
                            tf.keras.metrics.Recall()])
 
-    model.fit(train_set, epochs=100,
-              validation_data=test_set, callbacks=[tensorboard_setup()], verbose=2, workers=8)
+    model.fit(train_set, epochs=100, validation_data=test_set, callbacks=[tensorboard_setup()], verbose=2, workers=8)
 
     model.save("cnn.model")
+
+
+def __generate_model_figure(model):
+    """
+    Generates a figure of the keras sequential model.
+    layers.InputLayer(input_shape=(32, 32, 3)) must be the first layer of the model
+    """
+    font = ImageFont.truetype("arial.ttf", 20)
+    visualkeras.layered_view(model, legend=True, to_file='output3.png', font=font)
+
+
+def simple_evaluate(test_data):
+    model: keras.Model = keras.models.load_model('cnn.model')
+    model.evaluate(test_data, workers=4)
 
 
 def tensorboard_setup():

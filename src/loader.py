@@ -1,30 +1,22 @@
 import ast
-import pathlib
+import math
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-import math
+from sklearn.model_selection import train_test_split
 
 
-def load_data(data_path, sampling, rest_label, validation_percent=0.2, batch_size=32, img_height=252, img_width=252):
+def __prepare_dataframe(sampling, rest_label, rand_seed):
     """
-    Loads and labels images from a directory. Splits images into training and validation sets.
+    Prepares the dataframe by loading csv data in regards to resampling and labels.
+    Splits the data into train and test sets.
 
     :param rest_label: Boolean determining whether we use 5+1 labelling.
     :param sampling: Boolean determining whether we should try to resample the data.
-    :param img_width: Width of images after resizing
-    :param img_height: Height of images after resizing
-    :param batch_size: The size of batches of data
-    :param validation_percent: Percentage saved for validation of model
-    :param data_path: The path to dataset directory
-    :return: A tuple consisting of 2 tf.data.Dataset objects.The training and validation datasets respectively.
+    :return: A tuple consisting of 2 pandas dataframes. The training and test datasets respectively.
     """
-    # Re-create path into object-oriented system
-    data_dir = pathlib.Path(data_path)
-
-    generator = tf.keras.preprocessing.image.ImageDataGenerator(validation_split=validation_percent)
 
     column_labeled_images = ["filename", "labels"]
     if rest_label:
@@ -55,33 +47,74 @@ def load_data(data_path, sampling, rest_label, validation_percent=0.2, batch_siz
     # Convert string to lists to be used in dataframe
     df_labeled_images["labels"] = df_labeled_images["labels"].apply(lambda x: ast.literal_eval(x))
 
+    # 10% of data is saved for evaluation
+    train_val_ds, test_ds = train_test_split(df_labeled_images, test_size=0.1, random_state=rand_seed)
+
+    return train_val_ds, test_ds
+
+
+def load_data(data_path, sampling, rest_label, validation_percent=0.2, batch_size=64, img_height=256, img_width=256,
+              rand_seed=15):
+    """
+       Loads the dataframe containing train/validation data and splits into separate sets.
+
+       :param rand_seed: The seed used to reproduce random sets
+       :param rest_label: Boolean determining whether we use 5+1 labelling.
+       :param sampling: Boolean determining whether we should try to resample the data.
+       :param img_width: Width of images after resizing
+       :param img_height: Height of images after resizing
+       :param batch_size: The size of batches of data
+       :param validation_percent: Percentage saved for validation of model
+       :param data_path: The path to dataset directory
+       :return: A tuple consisting of 2 dataframe objects.The training and validation datasets respectively.
+       """
+
+    train_val_ds = __prepare_dataframe(sampling, rest_label, rand_seed)[0]
+
+    generator = tf.keras.preprocessing.image.ImageDataGenerator(validation_split=validation_percent)
+
     train_ds = generator.flow_from_dataframe(
-        df_labeled_images,
-        data_dir,
+        train_val_ds,
+        data_path,
         x_col="filename",
         y_col="labels",
         target_size=(img_height, img_width),
         subset="training",
-        seed=15,
+        seed=rand_seed,
         shuffle=True,
         data_format=None,
         batch_size=batch_size
     )
 
     validation_ds = generator.flow_from_dataframe(
-        df_labeled_images,
-        data_dir,
+        train_val_ds,
+        data_path,
         x_col="filename",
         y_col="labels",
         target_size=(img_height, img_width),
         subset="validation",
-        seed=15,
+        seed=rand_seed,
         shuffle=True,
         data_format=None,
         batch_size=batch_size
     )
 
     return train_ds, validation_ds
+
+
+def load_test_data(data_path, sampling, rest_label, rand_seed=15, batch_size=64, img_height=256, img_width=256):
+    test_df = __prepare_dataframe(sampling, rest_label, rand_seed)[1]
+
+    generator = tf.keras.preprocessing.image.ImageDataGenerator()
+
+    return generator.flow_from_dataframe(
+        test_df,
+        data_path,
+        x_col="filename",
+        y_col="labels",
+        target_size=(img_height, img_width),
+        batch_size=batch_size
+    )
 
 
 def visualize_data(dataset, img_count):
@@ -241,8 +274,8 @@ def undersample_rest_label(df_labeled_images, high_data_list):
     for oversampled in high_data_list:
         # Dataframe consisting of high_data labelled images.
         high_dataframes_size += len(df_labeled_images.loc[
-                                   df_labeled_images["labels"].map(lambda x: oversampled in x)
-                               ])
+                                        df_labeled_images["labels"].map(lambda x: oversampled in x)
+                                    ])
 
     average_dataframe_size = math.ceil(high_dataframes_size / len(high_data_list))
     rest_dataframe = df_labeled_images.loc[
