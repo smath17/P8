@@ -73,8 +73,8 @@ def simple_evaluate(test_data):
     model.evaluate(test_data, workers=4)
 
 
-def tensorboard_setup():
-    log_dir = "logs/fit/simple/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+def tensorboard_setup(model_name):
+    log_dir = "logs/fit/simple/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S_" + model_name)
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
     return tensorboard_callback
 
