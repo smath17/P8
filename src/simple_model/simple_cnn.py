@@ -14,33 +14,37 @@ from keras.preprocessing.image import load_img
 from tensorflow.keras import layers, models
 
 
-def train_cnn_model(train_set, test_set):
+def train_cnn_model(train_set, val_set, name):
     """
     Trains and saves a CNN model. Arguments should be from load_data.
 
+    :param name: Name of the model, for saving purposes
     :param train_set: Dataset used for training
-    :param test_set: Dataset used for validation
+    :param val_set: Dataset used for validation
     """
     # Do not show version warnings
     tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
     num_classes = len(train_set.class_indices.items())
-    dropout_rate = 0.5
+    dropout_conv = 0.2
+    dropout_dense = 0.5
 
     model = models.Sequential(layers=(
         layers.experimental.preprocessing.Rescaling(scale=1. / 127.5, offset=-1),  # Scale to [-1, 1]
         layers.Conv2D(32, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform()),
-        layers.Dropout(dropout_rate),
+        layers.Dropout(dropout_conv),
         layers.MaxPooling2D(),
         layers.Conv2D(64, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform()),
-        layers.Dropout(dropout_rate),
+        layers.Dropout(dropout_conv),
         layers.MaxPooling2D(),
         layers.Conv2D(128, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform()),
-        layers.Dropout(dropout_rate),
+        layers.Dropout(dropout_conv),
         layers.MaxPooling2D(),
         layers.Flatten(),
         layers.Dense(128, activation='relu', kernel_initializer=keras.initializers.HeUniform()),
-        layers.Dense(num_classes, activation="softmax"))
+        layers.Dropout(dropout_dense),
+        layers.Dense(num_classes),
+        layers.Activation(keras.activations.softmax))
     )
 
     # Experimental lr = 1e-6
@@ -50,9 +54,9 @@ def train_cnn_model(train_set, test_set):
                            tf.keras.metrics.AUC(multi_label=True),
                            tf.keras.metrics.Recall()])
 
-    model.fit(train_set, epochs=100, validation_data=test_set, callbacks=[tensorboard_setup()], verbose=2, workers=8)
+    model.fit(train_set, epochs=100, validation_data=val_set, callbacks=[tensorboard_setup(name)], verbose=2, workers=8, use_multiprocessing=True)
 
-    model.save("cnn.model")
+    model.save("cnn/model/" + name)
 
 
 def __generate_model_figure(model):

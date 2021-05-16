@@ -32,25 +32,25 @@ def label_images():
 
 def load_data_from_directory(directory, sampling, rest_label):
     time_before = time.time()
-    train_dataset, validation_dataset = load_data(directory, sampling, rest_label)
+    train_dataset, validation_dataset = load_data(directory, sampling, rest_label, img_height=256, img_width=256, batch_size=256)
     stop_timer(time_before, "Spent on loading images")
     return train_dataset, validation_dataset
 
 
 def evaluate_simple_cnn(directory, sampling, rest_label):
     # Make sure images have same size as when trained
-    test_data = load_test_data(directory, sampling, rest_label, img_width=32, img_height=32)
+    test_data = load_test_data(directory, sampling, rest_label, img_width=256, img_height=256, batch_size=256)
     simple_evaluate(test_data)
 
 
-def train_model(train_set, test_set):
+def train_model(train_set, test_set, model_name="standard"):
     time_before = time.time()
-    train_cnn_model(train_set, test_set)
+    train_cnn_model(train_set, test_set, model_name)
     stop_timer(time_before, "Spent on training Simple_cnn")
 
 
 def train_suatap_model(train_ds, val_ds):
-    model = suatap_model.cnn_setup(1, 3, len(train_ds.class_indices.items()), (32, 32, 3))
+    model = suatap_model.cnn_setup(1, 3, len(train_ds.class_indices.items()), (256, 256, 3))
     time_start = time.time()
     suatap_model.train_model(model, train_ds, val_ds)
     stop_timer(time_start, "Spent on training Suatap et. al.")
@@ -89,6 +89,7 @@ if __name__ == '__main__':
     parser.add_argument("--steps_per_epoch", type=int, default=0, help="Amount of steps per training epoch")
     parser.add_argument("--epoch_count", type=int, default=0, help="Amount of epochs during training")
     parser.add_argument("--evaluate_simple", action="store_true")
+    parser.add_argument('-name', action='store', type=str, help='The name of the model.')
 
     cli_args = parser.parse_args()
 
@@ -119,7 +120,10 @@ if __name__ == '__main__':
 
     # Train simple model
     if cli_args.simple_cnn and not cli_args.skip_data:
-        train_model(train_ds, test_ds)
+        if cli_args.name:
+            train_model(train_ds, test_ds, cli_args.name)
+        else:
+            train_model(train_ds, test_ds)
 
     # Predict on sample_image based on labels from the training set
     if cli_args.predict_simple:
