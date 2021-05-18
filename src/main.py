@@ -2,8 +2,13 @@ import argparse
 import time
 from datetime import timedelta
 
+# Disable tensorflow logging
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
+
 from tensorflow.python.client import device_lib
 
+import hypertune_simple
 from binary_model.basic_cnn import train, predict
 from image_processing import image_downloader, image_labeler
 from image_processing.image_labeler import label_images_with_rest
@@ -56,6 +61,12 @@ def train_suatap_model(train_ds, val_ds):
     stop_timer(time_start, "Spent on training Suatap et. al.")
 
 
+def tune_simple(train_ds, val_ds):
+    time_start = time.time()
+    hypertune_simple.tune_params(train_ds, val_ds)
+    stop_timer(time_start, "Spent on tuning learning rate.")
+
+
 def stop_timer(time_start, text="Spent on training"):
     time_elapsed = time.time() - time_start
     print(str(timedelta(seconds=time_elapsed)) + " " + text)
@@ -90,6 +101,7 @@ if __name__ == '__main__':
     parser.add_argument("--epoch_count", type=int, default=0, help="Amount of epochs during training")
     parser.add_argument("--evaluate_simple", action="store_true")
     parser.add_argument('-name', action='store', type=str, help='The name of the model.')
+    parser.add_argument('--tune_params', action='store_true')
 
     cli_args = parser.parse_args()
 
@@ -154,3 +166,6 @@ if __name__ == '__main__':
 
     if cli_args.evaluate_simple:
         evaluate_simple_cnn("../resources/all_images", cli_args.sample, cli_args.rest_label)
+
+    if cli_args.tune_params:
+        tune_simple(train_ds, val_ds)

@@ -26,35 +26,35 @@ def train_cnn_model(train_set, val_set, name):
     tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
     num_classes = len(train_set.class_indices.items())
-    dropout_conv = 0.2
-    dropout_dense = 0.5
+    weight_init_seed = 15
 
     model = models.Sequential(layers=(
         layers.experimental.preprocessing.Rescaling(scale=1. / 127.5, offset=-1),  # Scale to [-1, 1]
-        layers.Conv2D(32, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform()),
-        layers.Dropout(dropout_conv),
+        layers.Conv2D(16, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform(seed=weight_init_seed)),
+        layers.Dropout(0,2),
         layers.MaxPooling2D(),
-        layers.Conv2D(64, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform()),
-        layers.Dropout(dropout_conv),
+        layers.Conv2D(32, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform(seed=weight_init_seed)),
+        layers.Dropout(0,2),
         layers.MaxPooling2D(),
-        layers.Conv2D(128, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform()),
-        layers.Dropout(dropout_conv),
+        layers.Conv2D(64, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform(seed=weight_init_seed)),
+        layers.Dropout(0,2),
         layers.MaxPooling2D(),
         layers.Flatten(),
-        layers.Dense(128, activation='relu', kernel_initializer=keras.initializers.HeUniform()),
-        layers.Dropout(dropout_dense),
-        layers.Dense(num_classes),
-        layers.Activation(keras.activations.softmax))
+        layers.Dense(128, activation='relu', kernel_initializer=keras.initializers.HeUniform(seed=weight_init_seed)),
+        layers.Dropout(0,5),
+        layers.Dense(num_classes, kernel_initializer=keras.initializers.glorot_uniform(seed=weight_init_seed)),
+        layers.Activation(keras.activations.sigmoid))
     )
 
     # Experimental lr = 1e-6
     model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.0001),
-                  loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
-                  metrics=[tf.keras.metrics.Accuracy(),
+                  loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+                  metrics=[tf.keras.metrics.categorical_accuracy(),
                            tf.keras.metrics.AUC(multi_label=True),
-                           tf.keras.metrics.Recall()])
+                           tf.keras.metrics.Recall(),
+                           tf.keras.metrics.Precision()])
 
-    model.fit(train_set, epochs=100, validation_data=val_set, callbacks=[tensorboard_setup(name)], verbose=2, workers=8, use_multiprocessing=True)
+    model.fit(train_set, epochs=100, validation_data=val_set, callbacks=[tensorboard_setup(name)], verbose=1, workers=8)
 
     model.save("cnn/model/" + name)
 
@@ -64,8 +64,6 @@ def __generate_model_figure(model):
     Generates a figure of the keras sequential model.
     layers.InputLayer(input_shape=(32, 32, 3)) must be the first layer of the model
     """
-    font = ImageFont.truetype("arial.ttf", 20)
-    visualkeras.layered_view(model, legend=True, to_file='output3.png', font=font)
 
 
 def simple_evaluate(test_data):
