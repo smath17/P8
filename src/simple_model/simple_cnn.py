@@ -30,31 +30,38 @@ def train_cnn_model(train_set, val_set, name):
 
     model = models.Sequential(layers=(
         layers.experimental.preprocessing.Rescaling(scale=1. / 127.5, offset=-1),  # Scale to [-1, 1]
-        layers.Conv2D(16, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform(seed=weight_init_seed)),
-        layers.Dropout(0,2),
         layers.MaxPooling2D(),
         layers.Conv2D(32, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform(seed=weight_init_seed)),
-        layers.Dropout(0,2),
+        layers.Dropout(0.2),
         layers.MaxPooling2D(),
         layers.Conv2D(64, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform(seed=weight_init_seed)),
-        layers.Dropout(0,2),
+        layers.Dropout(0.2),
+        layers.MaxPooling2D(),
+        layers.Conv2D(128, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform(seed=weight_init_seed)),
+        layers.Dropout(0.2),
         layers.MaxPooling2D(),
         layers.Flatten(),
         layers.Dense(128, activation='relu', kernel_initializer=keras.initializers.HeUniform(seed=weight_init_seed)),
-        layers.Dropout(0,5),
+        layers.Dropout(0.5),
         layers.Dense(num_classes, kernel_initializer=keras.initializers.glorot_uniform(seed=weight_init_seed)),
         layers.Activation(keras.activations.sigmoid))
     )
 
     # Experimental lr = 1e-6
     model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.0001),
-                  loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
-                  metrics=[tf.keras.metrics.categorical_accuracy(),
+                  loss=tf.keras.losses.BinaryCrossentropy(from_logits=False),
+                  metrics=[tf.keras.metrics.CategoricalAccuracy(),  # Also known as Top 1
                            tf.keras.metrics.AUC(multi_label=True),
                            tf.keras.metrics.Recall(),
-                           tf.keras.metrics.Precision()])
+                           tf.keras.metrics.Precision(),
+                           tf.keras.metrics.TopKCategoricalAccuracy(k=2, name="top 2 accuracy"),
+                           tf.keras.metrics.TopKCategoricalAccuracy(k=3, name="top 3 accuracy"),
+                           tf.keras.metrics.TopKCategoricalAccuracy(k=4, name="top 4 accuracy"),
+                           tf.keras.metrics.TopKCategoricalAccuracy(k=5, name="top 5 accuracy")])
 
-    model.fit(train_set, epochs=100, validation_data=val_set, callbacks=[tensorboard_setup(name)], verbose=1, workers=8)
+    stop_early = keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
+
+    model.fit(train_set, epochs=100, validation_data=val_set, callbacks=[tensorboard_setup(name), stop_early], verbose=2, workers=8)
 
     model.save("cnn/model/" + name)
 
