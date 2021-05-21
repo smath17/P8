@@ -124,7 +124,7 @@ if __name__ == '__main__':
 
     # Load data
     if not cli_args.skip_data:
-        train_ds, test_ds = load_data_from_directory("../resources/all_images", cli_args.sample, cli_args.rest_label)
+        train_ds, val_ds = load_data_from_directory("../resources/all_images", cli_args.sample, cli_args.rest_label)
 
     # Visualize 9 images from the training set
     if cli_args.visualize and not cli_args.skip_data:
@@ -133,9 +133,9 @@ if __name__ == '__main__':
     # Train simple model
     if cli_args.simple_cnn and not cli_args.skip_data:
         if cli_args.name:
-            train_model(train_ds, test_ds, cli_args.name)
+            train_model(train_ds, val_ds, cli_args.name)
         else:
-            train_model(train_ds, test_ds)
+            train_model(train_ds, val_ds)
 
     # Predict on sample_image based on labels from the training set
     if cli_args.predict_simple:
@@ -146,7 +146,7 @@ if __name__ == '__main__':
 
     # Train model from Suatap paper
     if cli_args.suatap:
-        train_suatap_model(train_ds, test_ds)
+        train_suatap_model(train_ds, val_ds)
 
     # Train binary model
     if cli_args.binary_cnn:
