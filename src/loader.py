@@ -24,29 +24,6 @@ def __prepare_dataframe(sampling, rest_label, rand_seed):
     else:
         df_labeled_images = pd.read_csv("image_labels.txt", sep="|", names=column_labeled_images)
 
-    # Labels with > 50.000 entries
-    high_data_list = ["casual", "indie", "adventure", "action", "strategy"]
-    low_data_list = []
-
-    with open("../resources/tags.txt") as file:
-        for line in file:
-            genre = line.strip("\n")
-            if genre not in low_data_list and genre not in high_data_list:
-                low_data_list.append(genre)
-
-    if sampling:
-        print("Attempting to resample dataset...")
-        if rest_label:
-            df_labeled_images = undersample_rest_label(df_labeled_images, high_data_list)
-        else:
-            df_labeled_images = oversample_low_data(df_labeled_images, low_data_list, high_data_list)
-        print("Done resampling the dataset.")
-
-    print_data_distribution(df_labeled_images, low_data_list, high_data_list, rest_label)
-
-    # Convert string to lists to be used in dataframe
-    df_labeled_images["labels"] = df_labeled_images["labels"].apply(lambda x: ast.literal_eval(x))
-
     # 10% of data is saved for evaluation
     train_val_ds, test_ds = train_test_split(df_labeled_images, test_size=0.1, random_state=rand_seed)
 
@@ -70,8 +47,34 @@ def load_data(data_path, sampling, rest_label, validation_percent=0.2, batch_siz
        """
 
     train_val_ds = __prepare_dataframe(sampling, rest_label, rand_seed)[0]
+    # Make a copy in order to manipulate train_ds without affecting validation_ds
+    copy_ds = train_val_ds.copy()
 
     generator = tf.keras.preprocessing.image.ImageDataGenerator(validation_split=validation_percent)
+
+    # Labels with > 50.000 entries
+    high_data_list = ["casual", "indie", "adventure", "action", "strategy"]
+    low_data_list = []
+
+    with open("../resources/tags.txt") as file:
+        for line in file:
+            genre = line.strip("\n")
+            if genre not in low_data_list and genre not in high_data_list:
+                low_data_list.append(genre)
+
+    if sampling:
+        print("Attempting to resample dataset...")
+        if rest_label:
+            train_val_ds = undersample_rest_label(train_val_ds, high_data_list)
+        else:
+            train_val_ds = oversample_low_data(train_val_ds, low_data_list, high_data_list)
+        print("Done resampling the dataset.")
+
+    print_data_distribution(train_val_ds, low_data_list, high_data_list, rest_label)
+
+    # Convert string to lists to be used in dataframe
+    train_val_ds["labels"] = train_val_ds["labels"].apply(lambda x: ast.literal_eval(x))
+    copy_ds["labels"] = copy_ds["labels"].apply(lambda x: ast.literal_eval(x))
 
     train_ds = generator.flow_from_dataframe(
         train_val_ds,
@@ -87,7 +90,7 @@ def load_data(data_path, sampling, rest_label, validation_percent=0.2, batch_siz
     )
 
     validation_ds = generator.flow_from_dataframe(
-        train_val_ds,
+        copy_ds,
         data_path,
         x_col="filename",
         y_col="labels",
@@ -167,12 +170,10 @@ def print_data_distribution(df_labeled_images, low_data, high_data, rest_label):
         ]
         print(genre + ", " + str(len(dataframe)))
 
-    print("Length of Dataframe (All labels): " + str(len(df_labeled_images)))
+    print("Total amount of samples: " + str(len(df_labeled_images)))
 
 
 def oversample_low_data(df_labeled_images, low_data_list, high_data_list):
-    print("Before Dataframe (All): " + str(len(df_labeled_images)))
-
     high_dataframes = []
     for oversampled in high_data_list:
         # Dataframe consisting of action labelled images.
@@ -182,7 +183,6 @@ def oversample_low_data(df_labeled_images, low_data_list, high_data_list):
 
     for _ in range(0, 3):
         for genre in low_data_list:
-            # print("Sampling: " + genre)
             counter = 0
             while True:
                 # Dataframe consisting of fighting labelled images.
@@ -192,20 +192,6 @@ def oversample_low_data(df_labeled_images, low_data_list, high_data_list):
 
                 # If we reached a good distribution
                 if 20000 <= len(low_dataframe):
-                    """
-                    even = True
-                    
-                    # Check if all high_data dataframes are considered even
-                    for oversampled in high_dataframes:
-                        if len(oversampled) > 50000:
-                            even = False
-                            print("Uneven. Trying to sample again.")
-                            break
-                    if even:
-                    """
-                    # print("DONE")
-                    # print("Dataframe (" + genre + "): " + str(len(low_dataframe)))
-                    # print("Dataframe (All): " + str(len(df_labeled_images)))
                     break
 
                 # This does not affect image_labels.txt so this is reset every run.

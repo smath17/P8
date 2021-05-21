@@ -5,8 +5,6 @@ import keras.initializers
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-import visualkeras
-from PIL import ImageFont
 from keras.models import load_model
 from keras.preprocessing.image import img_to_array
 # make a prediction for a new image.
