@@ -60,7 +60,8 @@ def train_model(model: keras.Model, train_ds, val_ds):
                            tf.keras.metrics.TopKCategoricalAccuracy(k=3, name="top 3 accuracy"),
                            tf.keras.metrics.TopKCategoricalAccuracy(k=4, name="top 4 accuracy"),
                            tf.keras.metrics.TopKCategoricalAccuracy(k=5, name="top 5 accuracy")])
-    model.fit(train_ds, epochs=100, validation_data=val_ds, callbacks=[tensorboard_setup()], verbose=2, workers=8,
+    model.fit(train_ds, epochs=100, validation_data=val_ds, callbacks=[tensorboard_setup(), callback_earlystop()],
+              verbose=2, workers=8,
               use_multiprocessing=True)
 
     model.save("logs/fit/suatap/model")
@@ -70,6 +71,10 @@ def tensorboard_setup():
     log_dir = "logs/fit/suatap/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
     return tensorboard_callback
+
+
+def callback_earlystop():
+    return keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
 
 
 def feature_extract_layers(prev_layer, dropout_rate, init_filter, current_maxpool_count):

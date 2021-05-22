@@ -3,8 +3,8 @@ import time
 from datetime import timedelta
 
 # Disable tensorflow logging
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
+# import os
+# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # or any {'0', '1', '2'}
 
 from tensorflow.python.client import device_lib
 
@@ -55,7 +55,7 @@ def train_model(train_set, test_set, model_name="standard"):
 
 
 def train_suatap_model(train_ds, val_ds):
-    model = suatap_model.cnn_setup(1, 3, len(train_ds.class_indices.items()), (256, 256, 3))
+    model = suatap_model.cnn_setup(1, 5, len(train_ds.class_indices.items()), (256, 256, 3))
     time_start = time.time()
     suatap_model.train_model(model, train_ds, val_ds)
     stop_timer(time_start, "Spent on training Suatap et. al.")

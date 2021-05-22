@@ -28,14 +28,16 @@ def train_cnn_model(train_set, val_set, name):
 
     model = models.Sequential(layers=(
         layers.experimental.preprocessing.Rescaling(scale=1. / 127.5, offset=-1),  # Scale to [-1, 1]
-        layers.MaxPooling2D(),
-        layers.Conv2D(32, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform(seed=weight_init_seed)),
+        layers.Conv2D(32, 3, activation='relu', padding="same",
+                      kernel_initializer=keras.initializers.HeUniform(seed=weight_init_seed)),
         layers.Dropout(0.2),
         layers.MaxPooling2D(),
-        layers.Conv2D(64, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform(seed=weight_init_seed)),
+        layers.Conv2D(64, 3, activation='relu', padding="same",
+                      kernel_initializer=keras.initializers.HeUniform(seed=weight_init_seed)),
         layers.Dropout(0.2),
         layers.MaxPooling2D(),
-        layers.Conv2D(128, 3, activation='relu', padding="same", kernel_initializer=keras.initializers.HeUniform(seed=weight_init_seed)),
+        layers.Conv2D(128, 3, activation='relu', padding="same",
+                      kernel_initializer=keras.initializers.HeUniform(seed=weight_init_seed)),
         layers.Dropout(0.2),
         layers.MaxPooling2D(),
         layers.Flatten(),
@@ -59,7 +61,8 @@ def train_cnn_model(train_set, val_set, name):
 
     stop_early = keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
 
-    model.fit(train_set, epochs=100, validation_data=val_set, callbacks=[tensorboard_setup(name), stop_early], verbose=2, workers=8)
+    model.fit(train_set, epochs=100, validation_data=val_set, callbacks=[tensorboard_setup(name), stop_early],
+              verbose=2, workers=8, use_multiprocessing=True)
 
     model.save("cnn/model/" + name)
 
