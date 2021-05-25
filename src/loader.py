@@ -108,6 +108,9 @@ def load_data(data_path, sampling, rest_label, validation_percent=0.2, batch_siz
 def load_test_data(data_path, sampling, rest_label, rand_seed=15, batch_size=64, img_height=256, img_width=256):
     test_df = __prepare_dataframe(sampling, rest_label, rand_seed)[1]
 
+    # Convert string to lists to be used in dataframe
+    test_df["labels"] = test_df["labels"].apply(lambda x: ast.literal_eval(x))
+
     generator = tf.keras.preprocessing.image.ImageDataGenerator()
 
     return generator.flow_from_dataframe(
