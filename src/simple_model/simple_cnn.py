@@ -74,8 +74,8 @@ def __generate_model_figure(model):
     """
 
 
-def simple_evaluate(test_data):
-    model: keras.Model = keras.models.load_model('cnn.model')
+def simple_evaluate(test_data, name):
+    model: keras.Model = keras.models.load_model("cnn/model/" + name)
     model.evaluate(test_data, workers=4)
 
 

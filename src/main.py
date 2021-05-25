@@ -42,10 +42,10 @@ def load_data_from_directory(directory, sampling, rest_label):
     return train_dataset, validation_dataset
 
 
-def evaluate_simple_cnn(directory, sampling, rest_label):
+def evaluate_simple_cnn(directory, sampling, rest_label, name):
     # Make sure images have same size as when trained
     test_data = load_test_data(directory, sampling, rest_label, img_width=256, img_height=256, batch_size=256)
-    simple_evaluate(test_data)
+    simple_evaluate(test_data, name)
 
 
 def train_model(train_set, test_set, model_name="standard"):
@@ -165,7 +165,7 @@ if __name__ == '__main__':
         suatap_model.inference_mode("")
 
     if cli_args.evaluate_simple:
-        evaluate_simple_cnn("../resources/all_images", cli_args.sample, cli_args.rest_label)
+        evaluate_simple_cnn("../resources/all_images", cli_args.sample, cli_args.rest_label, cli_args.name)
 
     if cli_args.tune_params:
         tune_simple(train_ds, val_ds)
