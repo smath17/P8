@@ -1,4 +1,5 @@
 import datetime
+from collections import defaultdict
 from os import path
 
 import keras.initializers
@@ -59,10 +60,10 @@ def train_cnn_model(train_set, val_set, name):
                            tf.keras.metrics.TopKCategoricalAccuracy(k=4, name="top 4 accuracy"),
                            tf.keras.metrics.TopKCategoricalAccuracy(k=5, name="top 5 accuracy")])
 
-    stop_early = keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
+    stop_early = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
 
     model.fit(train_set, epochs=100, validation_data=val_set, callbacks=[tensorboard_setup(name), stop_early],
-              verbose=2, workers=8, use_multiprocessing=True)
+              verbose=2, workers=8)
 
     model.save("cnn/model/" + name)
 
@@ -72,6 +73,12 @@ def __generate_model_figure(model):
     Generates a figure of the keras sequential model.
     layers.InputLayer(input_shape=(32, 32, 3)) must be the first layer of the model
     """
+    color_map = defaultdict(dict)
+    color_map[layers.experimental.preprocessing.Rescaling]['fill'] = 'gray'
+    color_map[layers.Dense]['fill'] = 'red'
+
+    font = ImageFont.truetype("arial.ttf", 32)
+    visualkeras.layered_view(model, legend=True, to_file='output1.png', font=font, color_map=color_map)
 
 
 def simple_evaluate(test_data, name):
