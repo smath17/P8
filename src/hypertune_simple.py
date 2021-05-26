@@ -4,6 +4,9 @@ from tensorflow.keras import layers
 
 
 def build_model(hp: kt.HyperParameters):
+    # Clear gpu
+    keras.backend.clear_session()
+
     weight_init_seed = 15
     num_classes = 23
 
@@ -54,7 +57,7 @@ def build_model(hp: kt.HyperParameters):
 
 def tune_params(train_ds, val_ds):
     tuner = kt.Hyperband(build_model,
-                         objective=kt.Objective("val_precision", direction="max"),
+                         objective=kt.Objective("val_categorical_accuracy", direction="max"),
                          max_epochs=100,
                          factor=3,
                          seed=15,
@@ -64,7 +67,7 @@ def tune_params(train_ds, val_ds):
     # Start search for parameters
     tuner.search(train_ds, validation_data=val_ds, epochs=800,
                  callbacks=[callback_earlystop(), tensorboard_setup("Tuning_search")],
-                 verbose=2, workers=8, use_multiprocessing=True)
+                 verbose=2, workers=8)
 
     # Get the optimal hyperparameters
     best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
